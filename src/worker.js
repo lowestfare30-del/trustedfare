@@ -14,9 +14,27 @@ export default {
     if (url.pathname === "/api/search" && request.method === "POST") { return handleSearch(request, env, ctx); }
     if (url.pathname === "/api/booking-link" && request.method === "POST") { return handleBookingLink(request, env, ctx); }
     if (url.pathname === "/api/enquiry" && request.method === "POST") { return handleEnquiry(request, env, ctx); }
+    if (url.pathname === "/api/airports" && request.method === "GET") { return handleAirportSearch(request, env, ctx); }
     return new Response("Not found", { status: 404 });
   },
 };
+
+async function handleAirportSearch(request, env, ctx) {
+  const cors = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
+  const url = new URL(request.url);
+  const q = url.searchParams.get("q");
+  if (!q || q.length < 2) { return jsonResponse([], 200, cors); }
+  if (!env.IGNAV_API_KEY) { return jsonResponse([], 200, cors); }
+  try {
+    const limit = url.searchParams.get("limit") || "8";
+    const apiResp = await fetch(IGNAV_BASE + "/airports?q=" + encodeURIComponent(q) + "&limit=" + limit, {
+      headers: { "X-Api-Key": env.IGNAV_API_KEY }
+    });
+    if (!apiResp.ok) { return jsonResponse([], 200, cors); }
+    const results = await apiResp.json();
+    return jsonResponse(results, 200, cors);
+  } catch (e) { return jsonResponse([], 200, cors); }
+}
 
 async function handleSearch(request, env, ctx) {
   const cors = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
@@ -77,36 +95,8 @@ async function sendNotificationEmail(env, data, isRoundTrip) {
     if (data.children) tp.push(data.children + " Child(ren)");
     if (data.infants) tp.push(data.infants + " Infant(s)");
     const travelerSummary = tp.join(", ") || "1 Adult";
-    const messageBody = [
-      "NEW FLIGHT SEARCH - TRUSTEDFARE",
-      "================================",
-      "",
-      "Route: " + data.origin + " to " + data.destination,
-      "Departure: " + data.departure_date,
-      isRoundTrip ? "Return: " + data.return_date : "One-way",
-      "Cabin: " + (data.cabin_class || "economy"),
-      "Travelers: " + travelerSummary,
-      "",
-      "CUSTOMER CONTACT",
-      "Phone: " + (data.customerMobile || "N/A"),
-      "Email: " + (data.customerEmail || "N/A"),
-      "",
-      "Submitted: " + (data.submittedAt || new Date().toISOString()),
-      "================================"
-    ].join("\n");
-
-    await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        access_key: env.WEB3FORMS_KEY,
-        subject: "New Flight Search - " + data.origin + " to " + data.destination,
-        from_name: "TrustedFare Website",
-        to: "gm@trustedfare.com",
-        replyto: data.customerEmail || "noreply@trustedfare.com",
-        message: messageBody
-      })
-    });
+    const messageBody = ["NEW FLIGHT SEARCH - TRUSTEDFARE", "================================", "", "Route: " + data.origin + " to " + data.destination, "Departure: " + data.departure_date, isRoundTrip ? "Return: " + data.return_date : "One-way", "Cabin: " + (data.cabin_class || "economy"), "Travelers: " + travelerSummary, "", "CUSTOMER CONTACT", "Phone: " + (data.customerMobile || "N/A"), "Email: " + (data.customerEmail || "N/A"), "", "Submitted: " + (data.submittedAt || new Date().toISOString()), "================================"].join("\n");
+    await fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ access_key: env.WEB3FORMS_KEY, subject: "New Flight Search - " + data.origin + " to " + data.destination, from_name: "TrustedFare Website", to: "gm@trustedfare.com", replyto: data.customerEmail || "noreply@trustedfare.com", message: messageBody }) });
   } catch (e) { console.error("Email send failed:", e.message); }
 }
 
