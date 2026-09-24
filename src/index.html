@@ -39,12 +39,12 @@ label{display:block;margin-bottom:7px;color:var(--gold);font-size:9px;font-weigh
 .input-box input[type=date]{color-scheme:dark}
 .autocomplete-list{display:none;position:absolute;left:0;right:0;top:100%;margin-top:4px;background:#0b131d;border:1px solid var(--border);border-radius:12px;z-index:50;max-height:260px;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.75)}
 .autocomplete-list.show{display:block}
-.autocomplete-item{padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06)}
+.autocomplete-item{padding:12px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06)}
 .autocomplete-item:last-child{border-bottom:none}
-.autocomplete-item:hover,.autocomplete-item.active{background:rgba(213,173,85,.1)}
-.autocomplete-code{font-weight:700;color:var(--gold-light);font-size:13px;letter-spacing:1px}
-.autocomplete-name{font-size:11px;color:var(--muted);margin-top:2px}
-.autocomplete-city{font-size:9px;color:var(--cyan);margin-top:1px}
+.autocomplete-item:hover{background:rgba(213,173,85,.1)}
+.ac-code{font-weight:700;color:var(--gold-light);font-size:13px}
+.ac-name{font-size:11px;color:var(--muted);margin-top:2px}
+.ac-city{font-size:9px;color:var(--cyan)}
 .date-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .traveler-input{cursor:pointer}
 .arrow{margin-left:auto;color:var(--gold);font-size:20px}
@@ -107,315 +107,74 @@ label{display:block;margin-bottom:7px;color:var(--gold);font-size:9px;font-weigh
 </style>
 </head>
 <body>
-<header>
-<div>
-<div class="logo"><span class="logo-mark">&#10022;</span> TRUSTEDFARE</div>
-<div class="logo-sub">GLOBAL TRAVEL SERVICES</div>
-</div>
-<div class="menu">&#9776;</div>
-</header>
+<header><div><div class="logo"><span class="logo-mark">&#10022;</span> TRUSTEDFARE</div><div class="logo-sub">GLOBAL TRAVEL SERVICES</div></div><div class="menu">&#9776;</div></header>
 <main>
-<div class="heading">
-<div class="eyebrow">YOUR JOURNEY &#8226; OUR TRUST</div>
-<h1>SEARCH FLIGHTS</h1>
-<div class="line"></div>
-<div class="tagline">Live Flight Prices &#8226; Domestic &amp; International</div>
-</div>
+<div class="heading"><div class="eyebrow">YOUR JOURNEY &#8226; OUR TRUST</div><h1>SEARCH FLIGHTS</h1><div class="line"></div><div class="tagline">Live Flight Prices &#8226; Domestic &amp; International</div></div>
 <section class="search-panel">
 <div class="section-title">FLIGHT DETAILS</div>
-<div class="field">
-<label>FROM</label>
-<div class="input-box"><span class="icon">&#9992;</span><input type="text" id="origin" placeholder="City or airport (e.g. Delhi, SFO)" autocomplete="off"><span class="arrow">&#8250;</span></div>
-<div class="autocomplete-list" id="originList"></div>
-</div>
-<div class="field">
-<label>TO</label>
-<div class="input-box"><span class="icon">&#9992;</span><input type="text" id="destination" placeholder="City or airport (e.g. Dubai, JFK)" autocomplete="off"><span class="arrow">&#8250;</span></div>
-<div class="autocomplete-list" id="destinationList"></div>
-</div>
-<div class="field">
-<label>TRIP TYPE</label>
-<div class="input-box"><span class="icon">&#8644;</span><select id="tripType"><option value="round-trip">Round Trip</option><option value="one-way">One Way</option></select><span class="arrow">&#8964;</span></div>
-</div>
-<div class="date-row">
-<div class="field">
-<label>DEPARTURE</label>
-<div class="input-box"><input type="date" id="departure"></div>
-</div>
-<div class="field" id="returnField">
-<label>RETURN</label>
-<div class="input-box"><input type="date" id="returnDate"></div>
-</div>
-</div>
-<div class="field">
-<label>TRAVELERS</label>
-<div class="input-box traveler-input" id="travelerInput"><span class="icon">&#9817;</span><input id="travelerDisplay" value="1 Adult" readonly><span class="arrow">&#8964;</span></div>
-<div class="traveler-popup" id="travelerPopup">
-<div class="traveler-row">
-<div><div class="traveler-name">Adults</div><div class="traveler-age">12+ years</div></div>
-<div class="counter"><button type="button" data-type="adult" data-change="-1">&#8722;</button><span id="adultCount">1</span><button type="button" data-type="adult" data-change="1">+</button></div>
-</div>
-<div class="traveler-row">
-<div><div class="traveler-name">Children</div><div class="traveler-age">2&#8211;11 years</div></div>
-<div class="counter"><button type="button" data-type="child" data-change="-1">&#8722;</button><span id="childCount">0</span><button type="button" data-type="child" data-change="1">+</button></div>
-</div>
-<div class="traveler-row">
-<div><div class="traveler-name">Infants</div><div class="traveler-age">Under 2 years</div></div>
-<div class="counter"><button type="button" data-type="infant" data-change="-1">&#8722;</button><span id="infantCount">0</span><button type="button" data-type="infant" data-change="1">+</button></div>
-</div>
-<button type="button" class="done-btn" id="doneTravelers">DONE</button>
-</div>
-</div>
-<div class="field">
-<label>CABIN CLASS</label>
-<div class="input-box"><span class="icon">&#9672;</span><select id="cabin"><option value="economy">Economy</option><option value="premium_economy">Premium Economy</option><option value="business">Business</option><option value="first">First Class</option></select><span class="arrow">&#8964;</span></div>
-</div>
+<div class="field"><label>FROM</label><div class="input-box"><span class="icon">&#9992;</span><input type="text" id="origin" placeholder="City or airport (e.g. Delhi, JFK)" autocomplete="off"></div><div class="autocomplete-list" id="originList"></div></div>
+<div class="field"><label>TO</label><div class="input-box"><span class="icon">&#9992;</span><input type="text" id="destination" placeholder="City or airport (e.g. Dubai, LHR)" autocomplete="off"></div><div class="autocomplete-list" id="destinationList"></div></div>
+<div class="field"><label>TRIP TYPE</label><div class="input-box"><span class="icon">&#8644;</span><select id="tripType"><option value="round-trip">Round Trip</option><option value="one-way">One Way</option></select><span class="arrow">&#8964;</span></div></div>
+<div class="date-row"><div class="field"><label>DEPARTURE</label><div class="input-box"><input type="date" id="departure"></div></div><div class="field" id="returnField"><label>RETURN</label><div class="input-box"><input type="date" id="returnDate"></div></div></div>
+<div class="field"><label>TRAVELERS</label><div class="input-box traveler-input" id="travelerInput"><span class="icon">&#9817;</span><input id="travelerDisplay" value="1 Adult" readonly><span class="arrow">&#8964;</span></div><div class="traveler-popup" id="travelerPopup"><div class="traveler-row"><div><div class="traveler-name">Adults</div><div class="traveler-age">12+ years</div></div><div class="counter"><button type="button" data-type="adult" data-change="-1">&#8722;</button><span id="adultCount">1</span><button type="button" data-type="adult" data-change="1">+</button></div></div><div class="traveler-row"><div><div class="traveler-name">Children</div><div class="traveler-age">2&#8211;11 years</div></div><div class="counter"><button type="button" data-type="child" data-change="-1">&#8722;</button><span id="childCount">0</span><button type="button" data-type="child" data-change="1">+</button></div></div><div class="traveler-row"><div><div class="traveler-name">Infants</div><div class="traveler-age">Under 2 years</div></div><div class="counter"><button type="button" data-type="infant" data-change="-1">&#8722;</button><span id="infantCount">0</span><button type="button" data-type="infant" data-change="1">+</button></div></div><button type="button" class="done-btn" id="doneTravelers">DONE</button></div></div>
+<div class="field"><label>CABIN CLASS</label><div class="input-box"><span class="icon">&#9672;</span><select id="cabin"><option value="economy">Economy</option><option value="premium_economy">Premium Economy</option><option value="business">Business</option><option value="first">First Class</option></select><span class="arrow">&#8964;</span></div></div>
 <div class="section-title">CONTACT DETAILS</div>
-<div class="field">
-<label>MOBILE / PHONE</label>
-<div class="input-box"><span class="icon">&#9742;</span><input type="tel" id="mobile" placeholder="+1 555 123 4567" autocomplete="tel" inputmode="tel"></div>
-</div>
-<div class="field">
-<label>EMAIL</label>
-<div class="input-box"><span class="icon">&#9993;</span><input type="email" id="email" placeholder="name@example.com" autocomplete="email"></div>
-</div>
+<div class="field"><label>MOBILE / PHONE</label><div class="input-box"><span class="icon">&#9742;</span><input type="tel" id="mobile" placeholder="+1 555 123 4567" autocomplete="tel" inputmode="tel"></div></div>
+<div class="field"><label>EMAIL</label><div class="input-box"><span class="icon">&#9993;</span><input type="email" id="email" placeholder="name@example.com" autocomplete="email"></div></div>
 <button type="button" class="search-btn" id="searchButton">&#10022; SEARCH FLIGHTS &#10022;</button>
 <div class="status" id="status"></div>
-<div class="trust-row">
-<div class="trust-item"><strong>&#10022;</strong>GLOBAL</div>
-<div class="trust-item"><strong>24&#215;7</strong>SUPPORT</div>
-<div class="trust-item"><strong>&#10003;</strong>TRAVEL CARE</div>
-</div>
+<div class="trust-row"><div class="trust-item"><strong>&#10022;</strong>GLOBAL</div><div class="trust-item"><strong>24&#215;7</strong>SUPPORT</div><div class="trust-item"><strong>&#10003;</strong>TRAVEL CARE</div></div>
 </section>
-<div class="results-section" id="resultsSection">
-<div class="results-header">
-<h2>FLIGHT RESULTS</h2>
-<span class="results-count" id="resultsCount"></span>
-</div>
-<div id="resultsContainer"></div>
-</div>
-<div class="bottom-text">
-<div class="symbols">&#9670; &#9670; &#9670;</div>
-TRUSTEDFARE &#183; TRAVEL WITH TRUST
-<div class="company-contact">+91 6239946206<br>gm@trustedfare.com</div>
-</div>
+<div class="results-section" id="resultsSection"><div class="results-header"><h2>FLIGHT RESULTS</h2><span class="results-count" id="resultsCount"></span></div><div id="resultsContainer"></div></div>
+<div class="bottom-text"><div class="symbols">&#9670; &#9670; &#9670;</div>TRUSTEDFARE &#183; TRAVEL WITH TRUST<div class="company-contact">+91 6239946206<br>gm@trustedfare.com</div></div>
 </main>
 <script>
+var selectedOrigin="",selectedDest="";
 let travelers={adult:1,child:0,infant:0};
-const travelerInput=document.getElementById("travelerInput");
-const travelerPopup=document.getElementById("travelerPopup");
-travelerInput.addEventListener("click",function(e){e.stopPropagation();travelerPopup.style.display=travelerPopup.style.display==="block"?"none":"block";});
-document.querySelectorAll(".counter button").forEach(function(b){b.addEventListener("click",function(e){e.stopPropagation();changeTraveler(b.dataset.type,Number(b.dataset.change));});});
-document.getElementById("doneTravelers").addEventListener("click",function(e){e.stopPropagation();travelerPopup.style.display="none";});
-function changeTraveler(type,amount){travelers[type]+=amount;if(type==="adult"&&travelers.adult<1)travelers.adult=1;if(type!=="adult"&&travelers[type]<0)travelers[type]=0;document.getElementById("adultCount").textContent=travelers.adult;document.getElementById("childCount").textContent=travelers.child;document.getElementById("infantCount").textContent=travelers.infant;updateTravelerText();}
-function updateTravelerText(){const r=[];if(travelers.adult)r.push(travelers.adult+" Adult"+(travelers.adult>1?"s":""));if(travelers.child)r.push(travelers.child+" Child"+(travelers.child>1?"ren":""));if(travelers.infant)r.push(travelers.infant+" Infant"+(travelers.infant>1?"s":""));document.getElementById("travelerDisplay").value=r.join(" \u00b7 ");}
-document.addEventListener("click",function(e){if(!travelerPopup.contains(e.target)&&!travelerInput.contains(e.target))travelerPopup.style.display="none";});
-const departure=document.getElementById("departure");const returnDate=document.getElementById("returnDate");
-const tripType=document.getElementById("tripType");const returnField=document.getElementById("returnField");
-function getToday(){const n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");}
+var travelerInput=document.getElementById("travelerInput"),travelerPopup=document.getElementById("travelerPopup");
+travelerInput.addEventListener("click",function(e){e.stopPropagation();travelerPopup.style.display=travelerPopup.style.display==="block"?"none":"block"});
+document.querySelectorAll(".counter button").forEach(function(b){b.addEventListener("click",function(e){e.stopPropagation();changeTraveler(b.dataset.type,Number(b.dataset.change))})});
+document.getElementById("doneTravelers").addEventListener("click",function(e){e.stopPropagation();travelerPopup.style.display="none"});
+function changeTraveler(t,a){travelers[t]+=a;if(t==="adult"&&travelers.adult<1)travelers.adult=1;if(t!=="adult"&&travelers[t]<0)travelers[t]=0;document.getElementById("adultCount").textContent=travelers.adult;document.getElementById("childCount").textContent=travelers.child;document.getElementById("infantCount").textContent=travelers.infant;updateTravelerText()}
+function updateTravelerText(){var r=[];if(travelers.adult)r.push(travelers.adult+" Adult"+(travelers.adult>1?"s":""));if(travelers.child)r.push(travelers.child+" Child"+(travelers.child>1?"ren":""));if(travelers.infant)r.push(travelers.infant+" Infant"+(travelers.infant>1?"s":""));document.getElementById("travelerDisplay").value=r.join(" \u00b7 ")}
+document.addEventListener("click",function(e){if(!travelerPopup.contains(e.target)&&!travelerInput.contains(e.target))travelerPopup.style.display="none"});
+var departure=document.getElementById("departure"),returnDate=document.getElementById("returnDate"),tripType=document.getElementById("tripType"),returnField=document.getElementById("returnField");
+function getToday(){var n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0")}
 departure.min=getToday();returnDate.min=getToday();
-tripType.addEventListener("change",function(){if(tripType.value==="one-way"){returnField.style.display="none";returnDate.value="";}else{returnField.style.display="block";}});
-departure.addEventListener("change",function(){returnDate.min=departure.value;if(returnDate.value&&returnDate.value<departure.value)returnDate.value="";});
-function showStatus(message,type){const s=document.getElementById("status");s.textContent=message;s.className="status "+type;}
-
-// Airport autocomplete
-const originInput=document.getElementById("origin");
-const destinationInput=document.getElementById("destination");
-const originList=document.getElementById("originList");
-const destinationList=document.getElementById("destinationList");
-let airportTimer=null;
-let activeField=null;
-let activeIndex=-1;
-let activeResults=[];
-
-function setupAutocomplete(input,listEl){
-  input.addEventListener("input",function(){
-    clearTimeout(airportTimer);
-    const q=input.value.trim();
-    if(q.length<2){listEl.classList.remove("show");return;}
-    airportTimer=setTimeout(function(){searchAirports(q,input,listEl);},300);
-  });
-  input.addEventListener("keydown",function(e){
-    if(!listEl.classList.contains("show"))return;
-    if(e.key==="ArrowDown"){e.preventDefault();activeIndex=Math.min(activeIndex+1,activeResults.length-1);highlightItem(listEl);}
-    else if(e.key==="ArrowUp"){e.preventDefault();activeIndex=Math.max(activeIndex-1,0);highlightItem(listEl);}
-    else if(e.key==="Enter"){e.preventDefault();if(activeIndex>=0&&activeResults[activeIndex]){selectAirport(input,listEl,activeResults[activeIndex]);}}
-    else if(e.key==="Escape"){listEl.classList.remove("show");}
-  });
-  input.addEventListener("blur",function(){setTimeout(function(){listEl.classList.remove("show");},200);});
-  input.addEventListener("focus",function(){if(input.value.trim().length>=2){const q=input.value.trim();searchAirports(q,input,listEl);}});
-}
-
-function searchAirports(q,input,listEl){
-  activeField=input;
-  fetch("/api/airports?q="+encodeURIComponent(q)+"&limit=8")
-  .then(function(r){return r.json();})
-  .then(function(results){
-    activeResults=results||[];
-    activeIndex=-1;
-    if(!results||results.length===0){listEl.classList.remove("show");return;}
-    let html="";
-    results.forEach(function(a){
-      html+='<div class="autocomplete-item" data-code="'+a.code+'" data-name="'+a.name+'" data-city="'+a.city+'">';
-      html+='<div><div class="autocomplete-code">'+a.code+'</div><div class="autocomplete-name">'+a.name+'</div><div class="autocomplete-city">'+a.city+', '+a.country+'</div></div>';
-      html+='<div class="arrow">&#8250;</div></div>';
-    });
-    listEl.innerHTML=html;
-    listEl.classList.add("show");
-    listEl.querySelectorAll(".autocomplete-item").forEach(function(item,idx){
-      item.addEventListener("mousedown",function(e){e.preventDefault();selectAirport(input,listEl,{code:item.dataset.code,name:item.dataset.name,city:item.dataset.city});});
-      item.addEventListener("touchstart",function(e){e.preventDefault();selectAirport(input,listEl,{code:item.dataset.code,name:item.dataset.name,city:item.dataset.city});});
-    });
-  })
-  .catch(function(){listEl.classList.remove("show");});
-}
-
-function highlightItem(listEl){
-  const items=listEl.querySelectorAll(".autocomplete-item");
-  items.forEach(function(item,i){item.classList.toggle("active",i===activeIndex);});
-  if(activeIndex>=0&&items[activeIndex]){items[activeIndex].scrollIntoView({block:"nearest"});}
-}
-
-function selectAirport(input,listEl,airport){
-  input.value=airport.code;
-  listEl.classList.remove("show");
-  activeResults=[];
-}
-
-setupAutocomplete(originInput,originList);
-setupAutocomplete(destinationInput,destinationList);
-
-function formatTime(iso){if(!iso)return"--:--";var t=iso.match(/T(\d{2}):(\d{2})/);if(t)return t[1]+":"+t[2];return iso.substring(11,16)||"--:--";}
-function formatDuration(mins){if(!mins)return"--";const h=Math.floor(mins/60);const m=mins%60;return h+"h "+m+"m";}
-function getStopsText(segments){if(!segments||segments.length<=1)return"Nonstop";return(segments.length-1)+" Stop"+(segments.length>2?"s":"");}
-function renderFlightCard(itinerary,isInbound){
-  var price=itinerary.price||{};
-  var leg=isInbound?(itinerary.inbound||itinerary.outbound):itinerary.outbound;
-  if(!leg)return"";
-  var segments=leg.segments||[];
-  var carrier=leg.carrier||segments[0]?.operating_carrier_name||"Airline";
-  var firstSeg=segments[0]||{};
-  var lastSeg=segments[segments.length-1]||firstSeg;
-  var depTime=formatTime(firstSeg.departure_time_local||firstSeg.departure_time_utc);
-  var arrTime=formatTime(lastSeg.arrival_time_local||lastSeg.arrival_time_utc);
-  var depAirport=firstSeg.departure_airport||"---";
-  var arrAirport=lastSeg.arrival_airport||"---";
-  var duration=leg.duration_minutes||lastSeg.duration_minutes||0;
-  var stopsText=getStopsText(segments);
-  var cabin=itinerary.cabin_class||"economy";
-  var ignavId=itinerary.ignav_id||"";
-  var priceStatus=price.status==="verified"?'<div class="price-status">&#10003; VERIFIED</div>':"";
-  var flightInfo=segments.map(function(s){return s.marketing_carrier_code+s.flight_number;}).join(", ");
-  var html='<div class="flight-card">';
-  html+='<div class="flight-card-head">';
-  html+='<div><div class="airline-name">'+carrier+'</div><div class="airline-code">'+flightInfo+'</div></div>';
-  html+='<div class="flight-price"><span class="price-amount">'+(price.amount||"--")+'</span> <span class="price-currency">'+(price.currency||"USD")+'</span>'+priceStatus+'</div>';
-  html+='</div>';
-  html+='<div class="flight-route">';
-  html+='<div class="flight-segment"><div class="flight-time">'+depTime+'</div><div class="flight-airport">'+depAirport+'</div></div>';
-  html+='<div class="flight-duration"><div class="duration-line"></div><div class="duration-text">'+formatDuration(duration)+'</div><div class="duration-stops">'+stopsText+'</div></div>';
-  html+='<div class="flight-segment"><div class="flight-time">'+arrTime+'</div><div class="flight-airport">'+arrAirport+'</div></div>';
-  html+='</div>';
-  html+='<div class="flight-details">';
-  html+='<span class="detail-tag"><strong>Cabin:</strong> '+cabin+'</span>';
-  if(itinerary.requires_self_transfer)html+='<span class="detail-tag" style="color:var(--red)"><strong>Self-transfer</strong></span>';
-  html+='</div>';
-  html+='<button type="button" class="book-btn" data-ignav-id="'+ignavId+'">BOOK NOW &#10022;</button>';
-  html+='</div>';
-  return html;
-}
-function renderResults(data){
-  var container=document.getElementById("resultsContainer");
-  var section=document.getElementById("resultsSection");
-  var countEl=document.getElementById("resultsCount");
-  var itineraries=data.itineraries||[];
-  if(itineraries.length===0){
-    container.innerHTML='<div class="no-results">No flights found for this route. Try different dates or airports.</div>';
-    countEl.textContent="";
-  }else{
-    countEl.textContent=itineraries.length+" flight"+(itineraries.length>1?"s":"")+" found";
-    var html="";
-    for(var i=0;i<itineraries.length;i++){
-      html+=renderFlightCard(itineraries[i],false);
-      if(itineraries[i].inbound){
-        html+='<div class="round-trip-divider">RETURN FLIGHT</div>';
-        html+=renderFlightCard(itineraries[i],true);
-      }
-      if(i<itineraries.length-1)html+='<div style="height:4px"></div>';
-    }
-    container.innerHTML=html;
-    document.querySelectorAll(".book-btn").forEach(function(btn){
-      btn.addEventListener("click",function(){
-        var ignavId=this.dataset.ignavId;
-        if(!ignavId)return;
-        this.disabled=true;
-        this.textContent="GETTING BOOKING LINK...";
-        var self=this;
-        fetch("/api/booking-link",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ignav_id:ignavId})})
-        .then(function(r){return r.json();})
-        .then(function(result){
-          if(result.success&&result.booking_url){
-            window.open(result.booking_url,"_blank");
-            self.textContent="BOOK NOW &#10022;";
-          }else{
-            showStatus("Could not retrieve booking link. Please call +91 6239946206 to book.","error");
-            self.textContent="BOOK NOW &#10022;";
-          }
-          self.disabled=false;
-        })
-        .catch(function(){
-          self.textContent="BOOK NOW &#10022;";
-          self.disabled=false;
-          showStatus("Could not retrieve booking link. Please call +91 6239946206.","error");
-        });
-      });
-    });
-  }
-  section.style.display="block";
-  section.scrollIntoView({behavior:"smooth",block:"start"});
-}
+tripType.addEventListener("change",function(){if(tripType.value==="one-way"){returnField.style.display="none";returnDate.value=""}else{returnField.style.display="block"}});
+departure.addEventListener("change",function(){returnDate.min=departure.value;if(returnDate.value&&returnDate.value<departure.value)returnDate.value=""});
+function showStatus(m,t){var s=document.getElementById("status");s.textContent=m;s.className="status "+t}
+function formatTime(i){if(!i)return"--:--";var t=i.match(/T(\d{2}):(\d{2})/);if(t)return t[1]+":"+t[2];return i.substring(11,16)||"--:--"}
+function formatDuration(m){if(!m)return"--";var h=Math.floor(m/60),n=m%60;return h+"h "+n+"m"}
+function getStopsText(s){if(!s||s.length<=1)return"Nonstop";return(s.length-1)+" Stop"+(s.length>2?"s":"")}
+function renderFlightCard(it,isInb){var p=it.price||{},leg=isInb?(it.inbound||it.outbound):it.outbound;if(!leg)return"";var segs=leg.segments||[],c=leg.carrier||segs[0]?.operating_carrier_name||"Airline",fs=segs[0]||{},ls=segs[segs.length-1]||fs,dt=formatTime(fs.departure_time_local||fs.departure_time_utc),at=formatTime(ls.arrival_time_local||ls.arrival_time_utc),da=fs.departure_airport||"---",aa=ls.arrival_airport||"---",dur=leg.duration_minutes||ls.duration_minutes||0,st=getStopsText(segs),cab=it.cabin_class||"economy",iid=it.ignav_id||"",ps=p.status==="verified"?'<div class="price-status">&#10003; VERIFIED</div>':"",fi=segs.map(function(s){return s.marketing_carrier_code+s.flight_number}).join(", ");var h='<div class="flight-card"><div class="flight-card-head"><div><div class="airline-name">'+c+'</div><div class="airline-code">'+fi+'</div></div><div class="flight-price"><span class="price-amount">'+(p.amount||"--")+'</span> <span class="price-currency">'+(p.currency||"USD")+'</span>'+ps+'</div></div><div class="flight-route"><div class="flight-segment"><div class="flight-time">'+dt+'</div><div class="flight-airport">'+da+'</div></div><div class="flight-duration"><div class="duration-line"></div><div class="duration-text">'+formatDuration(dur)+'</div><div class="duration-stops">'+st+'</div></div><div class="flight-segment"><div class="flight-time">'+at+'</div><div class="flight-airport">'+aa+'</div></div></div><div class="flight-details"><span class="detail-tag"><strong>Cabin:</strong> '+cab+'</span>'+(it.requires_self_transfer?'<span class="detail-tag" style="color:var(--red)"><strong>Self-transfer</strong></span>':"")+'</div><button type="button" class="book-btn" data-ignav-id="'+iid+'">BOOK NOW &#10022;</button></div>';return h}
+function renderResults(d){var cont=document.getElementById("resultsContainer"),sec=document.getElementById("resultsSection"),ce=document.getElementById("resultsCount"),its=d.itineraries||[];if(its.length===0){cont.innerHTML='<div class="no-results">No flights found. Try different dates or airports.</div>';ce.textContent=""}else{ce.textContent=its.length+" flight"+(its.length>1?"s":"")+" found";var h="";for(var i=0;i<its.length;i++){h+=renderFlightCard(its[i],false);if(its[i].inbound){h+='<div class="round-trip-divider">RETURN FLIGHT</div>';h+=renderFlightCard(its[i],true)}if(i<its.length-1)h+='<div style="height:4px"></div>'}cont.innerHTML=h;document.querySelectorAll(".book-btn").forEach(function(b){b.addEventListener("click",function(){var id=this.dataset.ignavId;if(!id)return;this.disabled=true;this.textContent="GETTING BOOKING LINK...";var s=this;fetch("/api/booking-link",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ignav_id:id})}).then(function(r){return r.json()}).then(function(r){if(r.success&&r.booking_url){window.open(r.booking_url,"_blank");s.textContent="BOOK NOW &#10022;"}else{showStatus("Could not get booking link. Call +91 6239946206.","error");s.textContent="BOOK NOW &#10022;"}s.disabled=false}).catch(function(){s.textContent="BOOK NOW &#10022;";s.disabled=false;showStatus("Could not get booking link. Call +91 6239946206.","error")})})})}sec.style.display="block";sec.scrollIntoView({behavior:"smooth",block:"start"})}
+var originInput=document.getElementById("origin"),destInput=document.getElementById("destination"),originList=document.getElementById("originList"),destList=document.getElementById("destinationList");
+var originTimer,destTimer;
+originInput.addEventListener("input",function(){clearTimeout(originTimer);var q=originInput.value.trim();if(q.length<2){originList.classList.remove("show");return}originTimer=setTimeout(function(){fetchAirports(q,originList,originInput,"origin")},300)});
+destInput.addEventListener("input",function(){clearTimeout(destTimer);var q=destInput.value.trim();if(q.length<2){destList.classList.remove("show");return}destTimer=setTimeout(function(){fetchAirports(q,destList,destInput,"dest")},300)});
+function fetchAirports(q,list,input,which){fetch("/api/airports?q="+encodeURIComponent(q)+"&limit=8").then(function(r){return r.json()}).then(function(results){if(!results||results.length===0){list.classList.remove("show");return}list.innerHTML=results.map(function(a){return '<div class="autocomplete-item" data-code="'+a.code+'" data-name="'+(a.name||"")+'" data-city="'+(a.city||"")+'"><div class="ac-code">'+a.code+'</div><div class="ac-name">'+(a.name||"")+'</div><div class="ac-city">'+(a.city||"")+", "+(a.country||"")+'</div></div>'}).join("");list.classList.add("show");list.querySelectorAll(".autocomplete-item").forEach(function(item){item.addEventListener("click",function(){input.value=this.dataset.code;if(which==="origin")selectedOrigin=this.dataset.code;else selectedDest=this.dataset.code;list.classList.remove("show")})})}).catch(function(){list.classList.remove("show")})}
+document.addEventListener("click",function(e){if(!originList.contains(e.target)&&!originInput.contains(e.target))originList.classList.remove("show");if(!destList.contains(e.target)&&!destInput.contains(e.target))destList.classList.remove("show")});
 document.getElementById("searchButton").addEventListener("click",searchFlights);
 async function searchFlights(){
-  var origin=document.getElementById("origin").value.trim().toUpperCase();
-  var destination=document.getElementById("destination").value.trim().toUpperCase();
-  var departureDate=document.getElementById("departure").value;
-  var returnDateValue=document.getElementById("returnDate").value;
-  var cabin=document.getElementById("cabin").value;
-  var mobile=document.getElementById("mobile").value.trim();
-  var email=document.getElementById("email").value.trim();
-  var searchButton=document.getElementById("searchButton");
-  if(!origin||origin.length<3){showStatus("Please select a departure airport.","error");return;}
-  if(!destination||destination.length<3){showStatus("Please select a destination airport.","error");return;}
-  if(origin===destination){showStatus("Departure and destination cannot be the same.","error");return;}
-  if(!departureDate){showStatus("Please select your departure date.","error");return;}
-  if(tripType.value==="round-trip"&&!returnDateValue){showStatus("Please select your return date.","error");return;}
-  if(returnDateValue&&returnDateValue<departureDate){showStatus("Return date must be after departure date.","error");return;}
-  if(!mobile){showStatus("Please enter your phone number.","error");return;}
-  if(!email){showStatus("Please enter your email address.","error");return;}
-  var emailPattern=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if(!emailPattern.test(email)){showStatus("Please enter a valid email address.","error");return;}
-  var searchData={origin:origin,destination:destination,departure_date:departureDate,cabin_class:cabin,adults:travelers.adult,children:travelers.child,infants:travelers.infant,customerMobile:mobile,customerEmail:email,notificationEmail:"gm@trustedfare.com",submittedAt:new Date().toISOString()};
-  if(tripType.value==="round-trip"&&returnDateValue)searchData.return_date=returnDateValue;
-  searchButton.disabled=true;searchButton.textContent="SEARCHING FLIGHTS...";
-  showStatus("Searching live flight prices...","success");
-  document.getElementById("resultsSection").style.display="none";
-  document.getElementById("resultsContainer").innerHTML='<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Searching live flight prices...</div></div>';
-  document.getElementById("resultsSection").style.display="block";
-  try{
-    var response=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(searchData)});
-    var result=await response.json();
-    if(!response.ok){throw new Error(result.message||"Search failed.");}
-    showStatus("Live results loaded. TrustedFare will contact you shortly about your enquiry.","success");
-    renderResults(result);
-  }catch(error){
-    console.error("TrustedFare search error:",error);
-    document.getElementById("resultsContainer").innerHTML='<div class="no-results">Unable to search flights at this time. Please call +91 6239946206 for assistance.</div>';
-    document.getElementById("resultsSection").style.display="block";
-    showStatus("Search error. Please try again or call +91 6239946206.","error");
-  }finally{
-    searchButton.disabled=false;searchButton.textContent="\u2726 SEARCH FLIGHTS \u2726";
-  }
-}
+var origin=(selectedOrigin||originInput.value.trim()).toUpperCase(),destination=(selectedDest||destInput.value.trim()).toUpperCase(),departureDate=departure.value,returnDateValue=returnDate.value,cabin=document.getElementById("cabin").value,mobile=document.getElementById("mobile").value.trim(),email=document.getElementById("email").value.trim(),searchButton=document.getElementById("searchButton");
+if(!origin||origin.length<2){showStatus("Please enter your departure city or airport.","error");return}
+if(!destination||destination.length<2){showStatus("Please enter your destination city or airport.","error");return}
+if(origin===destination){showStatus("Departure and destination cannot be the same.","error");return}
+if(!departureDate){showStatus("Please select your departure date.","error");return}
+if(tripType.value==="round-trip"&&!returnDateValue){showStatus("Please select your return date.","error");return}
+if(returnDateValue&&returnDateValue<departureDate){showStatus("Return date must be after departure date.","error");return}
+if(!mobile){showStatus("Please enter your phone number.","error");return}
+if(!email){showStatus("Please enter your email address.","error");return}
+var ep=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;if(!ep.test(email)){showStatus("Please enter a valid email address.","error");return}
+var sd={origin:origin,destination:destination,departure_date:departureDate,cabin_class:cabin,adults:travelers.adult,children:travelers.child,infants:travelers.infant,customerMobile:mobile,customerEmail:email,notificationEmail:"gm@trustedfare.com",submittedAt:new Date().toISOString()};
+if(tripType.value==="round-trip"&&returnDateValue)sd.return_date=returnDateValue;
+searchButton.disabled=true;searchButton.textContent="SEARCHING FLIGHTS...";
+showStatus("Searching live flight prices...","success");
+document.getElementById("resultsSection").style.display="none";
+document.getElementById("resultsContainer").innerHTML='<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Searching live flight prices...</div></div>';
+document.getElementById("resultsSection").style.display="block";
+try{var resp=await fetch("/api/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(sd)});var result=await resp.json();if(!resp.ok)throw new Error(result.message||"Search failed.");showStatus("Live results loaded. TrustedFare will contact you shortly.","success");renderResults(result)}catch(err){console.error("Search error:",err);document.getElementById("resultsContainer").innerHTML='<div class="no-results">Unable to search flights. Please call +91 6239946206.</div>';document.getElementById("resultsSection").style.display="block";showStatus("Search error. Please try again or call +91 6239946206.","error")}finally{searchButton.disabled=false;searchButton.textContent="\u2726 SEARCH FLIGHTS \u2726"}}
 </script>
 </body>
 </html>
