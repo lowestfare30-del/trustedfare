@@ -177,7 +177,7 @@ async function handleAdminLogin(request, env, ctx) {
 }
 
 async function handleAdminBookings(request, env, ctx) {
-  const cors = { "Access-Control-Allow-Origin": "*", "Content-Type: "application/json" };
+  const cors = { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
   const auth = request.headers.get("Authorization") || "";
   if (!auth.startsWith("Bearer admin-token-")) { return jsonResponse({ success: false, message: "Unauthorized." }, 401, cors); }
   if (!env.DB) { return jsonResponse({ success: false, message: "Database not configured." }, 500, cors); }
