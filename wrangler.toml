@@ -2,11 +2,15 @@ name = "trustedfare"
 main = "src/worker.js"
 compatibility_date = "2026-09-24"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "trustedfare-bookings"
-database_id = "369424af-fb33-4311-885b-78974ae16ff6"
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
 
 [[kv_namespaces]]
 binding = "ENQUIRIES"
 id = "5aa25d7016784985ad8178eda34ba4d1"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "trustedfare-bookings"
+database_id = "369424af-fb33-4311-885b-78974ae16ff6"
