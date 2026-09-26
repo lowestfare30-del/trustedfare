@@ -8,10 +8,18 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (request.method === "OPTIONS") {
-      return new Response(null, { headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" } });
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      });
     }
-    if (url.pathname === "/" && request.method === "GET") return new Response(HTML_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
-    if (url.pathname === "/admin" && request.method === "GET") return new Response(ADMIN_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+    if (url.pathname === "/" && request.method === "GET")
+      return new Response(HTML_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+    if (url.pathname === "/admin" && request.method === "GET")
+      return new Response(ADMIN_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
     if (url.pathname === "/api/search" && request.method === "POST") return handleSearch(request, env, ctx);
     if (url.pathname === "/api/search/multi-city" && request.method === "POST") return handleMultiCitySearch(request, env, ctx);
     if (url.pathname === "/api/booking-link" && request.method === "POST") return handleBookingLink(request, env, ctx);
@@ -54,7 +62,10 @@ async function handleAirportSearch(request, env, ctx) {
   if (!env.IGNAV_API_KEY) return jsonResponse([], 200, cors);
   try {
     const limit = url.searchParams.get("limit") || "10";
-    const apiResp = await fetch(IGNAV_BASE + "/airports?q=" + encodeURIComponent(q) + "&limit=" + limit, { headers: { "X-Api-Key": env.IGNAV_API_KEY } });
+    const apiResp = await fetch(
+      IGNAV_BASE + "/airports?q=" + encodeURIComponent(q) + "&limit=" + limit,
+      { headers: { "X-Api-Key": env.IGNAV_API_KEY } }
+    );
     if (!apiResp.ok) return jsonResponse([], 200, cors);
     const results = await apiResp.json();
     return jsonResponse(results, 200, cors);
@@ -68,8 +79,10 @@ async function handleSearch(request, env, ctx) {
   const cors = corsHeaders();
   let data;
   try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
-  if (!data.origin || !data.destination || !data.departure_date) return jsonResponse({ success: false, message: "Missing required fields." }, 400, cors);
-  if (data.origin === data.destination) return jsonResponse({ success: false, message: "Origin and destination cannot be the same." }, 400, cors);
+  if (!data.origin || !data.destination || !data.departure_date)
+    return jsonResponse({ success: false, message: "Missing required fields." }, 400, cors);
+  if (data.origin === data.destination)
+    return jsonResponse({ success: false, message: "Origin and destination cannot be the same." }, 400, cors);
   const isRoundTrip = !!data.return_date;
   const endpoint = isRoundTrip ? IGNAV_BASE + "/fares/round-trip" : IGNAV_BASE + "/fares/one-way";
   const apiBody = { origin: data.origin, destination: data.destination, departure_date: data.departure_date };
@@ -103,10 +116,16 @@ async function handleSearch(request, env, ctx) {
     ctx.waitUntil(env.ENQUIRIES.put(enquiryId, JSON.stringify(data), { expirationTtl: 7776000 }));
   }
   if (env.WEB3FORMS_KEY) ctx.waitUntil(sendNotificationEmail(env, data, isRoundTrip));
-  if (!env.IGNAV_API_KEY) return jsonResponse({ success: false, message: "Flight search is not configured." }, 500, cors);
+  if (!env.IGNAV_API_KEY)
+    return jsonResponse({ success: false, message: "Flight search is not configured." }, 500, cors);
   try {
-    const apiResp = await fetch(endpoint, { method: "POST", headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify(apiBody) });
-    if (!apiResp.ok) return jsonResponse({ success: false, message: "Flight search temporarily unavailable. Call +91 6239946206." }, 502, cors);
+    const apiResp = await fetch(endpoint, {
+      method: "POST",
+      headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify(apiBody),
+    });
+    if (!apiResp.ok)
+      return jsonResponse({ success: false, message: "Flight search temporarily unavailable. Call +91 6239946206." }, 502, cors);
     const flightData = await apiResp.json();
     return jsonResponse(flightData, 200, cors);
   } catch {
@@ -119,9 +138,11 @@ async function handleMultiCitySearch(request, env, ctx) {
   const cors = corsHeaders();
   let data;
   try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
-  if (!data.legs || !Array.isArray(data.legs) || data.legs.length === 0) return jsonResponse({ success: false, message: "Missing or invalid legs array." }, 400, cors);
+  if (!data.legs || !Array.isArray(data.legs) || data.legs.length === 0)
+    return jsonResponse({ success: false, message: "Missing or invalid legs array." }, 400, cors);
   for (const leg of data.legs) {
-    if (!leg.origin || !leg.destination || !leg.departure_date) return jsonResponse({ success: false, message: "Each leg needs origin, destination, and departure_date." }, 400, cors);
+    if (!leg.origin || !leg.destination || !leg.departure_date)
+      return jsonResponse({ success: false, message: "Each leg needs origin, destination, and departure_date." }, 400, cors);
   }
   const apiBody = { legs: data.legs };
   if (data.adults) apiBody.adults = data.adults;
@@ -141,10 +162,16 @@ async function handleMultiCitySearch(request, env, ctx) {
   if (data.airlines_exclude) apiBody.airlines_exclude = data.airlines_exclude;
   if (data.allow_self_transfer !== undefined) apiBody.allow_self_transfer = data.allow_self_transfer;
   if (data.market) apiBody.market = data.market;
-  if (!env.IGNAV_API_KEY) return jsonResponse({ success: false, message: "Flight search is not configured." }, 500, cors);
+  if (!env.IGNAV_API_KEY)
+    return jsonResponse({ success: false, message: "Flight search is not configured." }, 500, cors);
   try {
-    const apiResp = await fetch(IGNAV_BASE + "/fares/search", { method: "POST", headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify(apiBody) });
-    if (!apiResp.ok) return jsonResponse({ success: false, message: "Flight search temporarily unavailable. Call +91 6239946206." }, 502, cors);
+    const apiResp = await fetch(IGNAV_BASE + "/fares/search", {
+      method: "POST",
+      headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify(apiBody),
+    });
+    if (!apiResp.ok)
+      return jsonResponse({ success: false, message: "Flight search temporarily unavailable. Call +91 6239946206." }, 502, cors);
     const flightData = await apiResp.json();
     return jsonResponse(flightData, 200, cors);
   } catch {
@@ -160,7 +187,11 @@ async function handleBookingLink(request, env, ctx) {
   if (!data.ignav_id) return jsonResponse({ success: false, message: "Missing ignav_id." }, 400, cors);
   if (!env.IGNAV_API_KEY) return jsonResponse({ success: false, message: "Booking not configured." }, 500, cors);
   try {
-    const apiResp = await fetch(IGNAV_BASE + "/fares/booking-links", { method: "POST", headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ ignav_id: data.ignav_id }) });
+    const apiResp = await fetch(IGNAV_BASE + "/fares/booking-links", {
+      method: "POST",
+      headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ ignav_id: data.ignav_id }),
+    });
     if (!apiResp.ok) return jsonResponse({ success: false, message: "Could not retrieve booking link." }, 502, cors);
     const result = await apiResp.json();
     let bookingUrl = null;
@@ -169,13 +200,25 @@ async function handleBookingLink(request, env, ctx) {
       for (const option of result.booking_options) {
         if (option.links) {
           for (const link of option.links) {
-            allLinks.push({ provider_name: link.provider_name, provider_type: link.provider_type, price: link.price, url: link.url, leg_indexes: option.leg_indexes });
+            allLinks.push({
+              provider_name: link.provider_name,
+              provider_type: link.provider_type,
+              price: link.price,
+              url: link.url,
+              leg_indexes: option.leg_indexes,
+            });
             if (!bookingUrl) bookingUrl = link.url;
           }
         }
       }
     }
-    return jsonResponse({ success: true, booking_url: bookingUrl, all_links: allLinks, itinerary: result.itinerary || null, booking_options: result.booking_options || [] }, 200, cors);
+    return jsonResponse({
+      success: true,
+      booking_url: bookingUrl,
+      all_links: allLinks,
+      itinerary: result.itinerary || null,
+      booking_options: result.booking_options || [],
+    }, 200, cors);
   } catch {
     return jsonResponse({ success: false, message: "Could not retrieve booking link." }, 502, cors);
   }
@@ -186,13 +229,23 @@ async function handlePriceTrack(request, env, ctx) {
   const cors = corsHeaders();
   let data;
   try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
-  if (!data.origin || !data.destination || !data.departure_date) return jsonResponse({ success: false, message: "Missing origin, destination, or departure_date." }, 400, cors);
+  if (!data.origin || !data.destination || !data.departure_date)
+    return jsonResponse({ success: false, message: "Missing origin, destination, or departure_date." }, 400, cors);
   const trackKey = "track:" + data.origin + ":" + data.destination + ":" + data.departure_date;
   const targetPrice = data.target_price || null;
   const dropPercent = data.drop_percent || 10;
   if (!env.IGNAV_API_KEY) return jsonResponse({ success: false, message: "Flight search is not configured." }, 500, cors);
   try {
-    const apiResp = await fetch(IGNAV_BASE + "/fares/one-way", { method: "POST", headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ origin: data.origin, destination: data.destination, departure_date: data.departure_date, cabin_class: data.cabin_class || "economy" }) });
+    const apiResp = await fetch(IGNAV_BASE + "/fares/one-way", {
+      method: "POST",
+      headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        origin: data.origin,
+        destination: data.destination,
+        departure_date: data.departure_date,
+        cabin_class: data.cabin_class || "economy",
+      }),
+    });
     if (!apiResp.ok) return jsonResponse({ success: false, message: "Flight search unavailable." }, 502, cors);
     const flightData = await apiResp.json();
     const itineraries = (flightData.itineraries || []).filter(i => i.price && i.price.status === "verified");
@@ -215,7 +268,11 @@ async function handlePriceTrack(request, env, ctx) {
     else if (dropped) alert = "Price dropped " + dropPercent + "%+: now " + price + " " + currency + " (was " + previous.price + " " + previous.currency + ")";
     if (alert) {
       try {
-        const bkResp = await fetch(IGNAV_BASE + "/fares/booking-links", { method: "POST", headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" }, body: JSON.stringify({ ignav_id: best.ignav_id }) });
+        const bkResp = await fetch(IGNAV_BASE + "/fares/booking-links", {
+          method: "POST",
+          headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" },
+          body: JSON.stringify({ ignav_id: best.ignav_id }),
+        });
         if (bkResp.ok) {
           const bkData = await bkResp.json();
           if (bkData.booking_options && bkData.booking_options.length > 0) {
@@ -225,7 +282,16 @@ async function handlePriceTrack(request, env, ctx) {
         }
       } catch {}
     }
-    return jsonResponse({ success: true, current_price: price, currency, ignav_id: best.ignav_id, checked_at: checkedAt, previous_price: previous ? previous.price : null, alert, booking_url: bookingUrl }, 200, cors);
+    return jsonResponse({
+      success: true,
+      current_price: price,
+      currency,
+      ignav_id: best.ignav_id,
+      checked_at: checkedAt,
+      previous_price: previous ? previous.price : null,
+      alert,
+      booking_url: bookingUrl,
+    }, 200, cors);
   } catch {
     return jsonResponse({ success: false, message: "Unable to reach flight search." }, 502, cors);
   }
@@ -237,7 +303,8 @@ async function handlePriceTrackGet(request, env, ctx) {
   const origin = url.searchParams.get("origin");
   const destination = url.searchParams.get("destination");
   const departureDate = url.searchParams.get("departure_date");
-  if (!origin || !destination || !departureDate) return jsonResponse({ success: false, message: "Missing origin, destination, or departure_date." }, 400, cors);
+  if (!origin || !destination || !departureDate)
+    return jsonResponse({ success: false, message: "Missing origin, destination, or departure_date." }, 400, cors);
   const trackKey = "track:" + origin + ":" + destination + ":" + departureDate;
   if (!env.ENQUIRIES) return jsonResponse({ success: false, message: "Tracking not configured." }, 500, cors);
   const record = await env.ENQUIRIES.get(trackKey);
@@ -261,14 +328,24 @@ async function handleCreateBooking(request, env, ctx) {
   const cors = corsHeaders();
   let data;
   try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
-  if (!data.origin || !data.destination || !data.departure_date || !data.customer_name || !data.customer_mobile || !data.customer_email) return jsonResponse({ success: false, message: "Missing required fields." }, 400, cors);
+  if (!data.origin || !data.destination || !data.departure_date || !data.customer_name || !data.customer_mobile || !data.customer_email)
+    return jsonResponse({ success: false, message: "Missing required fields." }, 400, cors);
   if (!env.DB) return jsonResponse({ success: false, message: "Database not configured." }, 500, cors);
   const bookingId = "TF" + Date.now().toString().slice(-8) + Math.random().toString(36).slice(2, 5).toUpperCase();
   try {
-    await env.DB.prepare("INSERT INTO bookings (id, origin, destination, departure_date, return_date, cabin_class, adults, children, infants, price_amount, price_currency, ignav_id, status, customer_name, customer_mobile, customer_email, payment_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind(bookingId, data.origin, data.destination, data.departure_date, data.return_date || null, data.cabin_class || "economy", data.adults || 1, data.children || 0, data.infants || 0, data.price_amount || null, data.price_currency || "INR", data.ignav_id || null, "pending_payment", data.customer_name, data.customer_mobile, data.customer_email, "pending").run();
+    await env.DB.prepare(
+      "INSERT INTO bookings (id, origin, destination, departure_date, return_date, cabin_class, adults, children, infants, price_amount, price_currency, ignav_id, status, customer_name, customer_mobile, customer_email, payment_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(
+      bookingId, data.origin, data.destination, data.departure_date, data.return_date || null,
+      data.cabin_class || "economy", data.adults || 1, data.children || 0, data.infants || 0,
+      data.price_amount || null, data.price_currency || "INR", data.ignav_id || null,
+      "pending_payment", data.customer_name, data.customer_mobile, data.customer_email, "pending"
+    ).run();
     if (data.passengers && Array.isArray(data.passengers)) {
       for (const p of data.passengers) {
-        await env.DB.prepare("INSERT INTO passengers (booking_id, title, first_name, last_name, date_of_birth, passport_number, passport_expiry) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(bookingId, p.title || "", p.first_name || "", p.last_name || "", p.date_of_birth || "", p.passport_number || "", p.passport_expiry || "").run();
+        await env.DB.prepare(
+          "INSERT INTO passengers (booking_id, title, first_name, last_name, date_of_birth, passport_number, passport_expiry) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        ).bind(bookingId, p.title || "", p.first_name || "", p.last_name || "", p.date_of_birth || "", p.passport_number || "", p.passport_expiry || "").run();
       }
     }
     if (env.WEB3FORMS_KEY) ctx.waitUntil(sendBookingEmail(env, data, bookingId));
@@ -284,12 +361,15 @@ async function handlePaymentSubmit(request, env, ctx) {
   const cors = corsHeaders();
   let data;
   try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
-  if (!data.booking_id || !data.utr_reference) return jsonResponse({ success: false, message: "Missing booking ID or UTR reference." }, 400, cors);
+  if (!data.booking_id || !data.utr_reference)
+    return jsonResponse({ success: false, message: "Missing booking ID or UTR reference." }, 400, cors);
   if (!env.DB) return jsonResponse({ success: false, message: "Database not configured." }, 500, cors);
   try {
     const booking = await env.DB.prepare("SELECT * FROM bookings WHERE id = ?").bind(data.booking_id).first();
     if (!booking) return jsonResponse({ success: false, message: "Booking not found." }, 404, cors);
-    await env.DB.prepare("UPDATE bookings SET utr_reference = ?, payment_status = 'submitted', status = 'payment_pending', updated_at = datetime('now') WHERE id = ?").bind(data.utr_reference, data.booking_id).run();
+    await env.DB.prepare(
+      "UPDATE bookings SET utr_reference = ?, payment_status = 'submitted', status = 'payment_pending', updated_at = datetime('now') WHERE id = ?"
+    ).bind(data.utr_reference, data.booking_id).run();
     if (env.WEB3FORMS_KEY) ctx.waitUntil(sendPaymentEmail(env, booking, data.utr_reference));
     return jsonResponse({ success: true, message: "Payment submitted. We will verify and confirm your booking shortly." }, 200, cors);
   } catch (e) {
@@ -319,7 +399,8 @@ async function handleAdminLogin(request, env, ctx) {
   const cors = corsHeaders();
   let data;
   try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
-  if (data.password === ADMIN_PASSWORD) return jsonResponse({ success: true, token: "admin-token-" + Date.now() }, 200, cors);
+  if (data.password === ADMIN_PASSWORD)
+    return jsonResponse({ success: true, token: "admin-token-" + Date.now() }, 200, cors);
   return jsonResponse({ success: false, message: "Invalid password." }, 401, cors);
 }
 
@@ -401,7 +482,12 @@ async function handleTicketDownload(request, env, ctx) {
     const binary = atob(base64Data);
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    return new Response(bytes, { headers: { "Content-Type": parsed.filetype || "application/pdf", "Content-Disposition": 'attachment; filename="' + (parsed.filename || "ticket.pdf") + '"' } });
+    return new Response(bytes, {
+      headers: {
+        "Content-Type": parsed.filetype || "application/pdf",
+        "Content-Disposition": 'attachment; filename="' + (parsed.filename || "ticket.pdf") + '"',
+      },
+    });
   }
   return jsonResponse({ success: false, message: "Ticket file not available." }, 404, cors);
 }
@@ -434,29 +520,113 @@ async function sendNotificationEmail(env, data, isRoundTrip) {
     if (data.children) tp.push(data.children + " Child(ren)");
     if (data.infants) tp.push(data.infants + " Infant(s)");
     const travelerSummary = tp.join(", ") || "1 Adult";
-    const messageBody = ["NEW FLIGHT SEARCH - TRUSTEDFARE", "================================", "", "Route: " + data.origin + " to " + data.destination, "Departure: " + data.departure_date, isRoundTrip ? "Return: " + data.return_date : "One-way", "Cabin: " + (data.cabin_class || "economy"), "Travelers: " + travelerSummary, "", "CUSTOMER CONTACT", "Phone: " + (data.customerMobile || "N/A"), "Email: " + (data.customerEmail || "N/A"), "", "Submitted: " + (data.submittedAt || new Date().toISOString()), "================================"].join("\n");
-    await fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ access_key: env.WEB3FORMS_KEY, subject: "New Flight Search - " + data.origin + " to " + data.destination, from_name: "TrustedFare Website", to: "gm@trustedfare.com", replyto: data.customerEmail || "noreply@trustedfare.com", message: messageBody }) });
+    const messageBody = [
+      "NEW FLIGHT SEARCH - TRUSTEDFARE", "================================", "",
+      "Route: " + data.origin + " to " + data.destination,
+      "Departure: " + data.departure_date,
+      isRoundTrip ? "Return: " + data.return_date : "One-way",
+      "Cabin: " + (data.cabin_class || "economy"),
+      "Travelers: " + travelerSummary, "",
+      "CUSTOMER CONTACT",
+      "Phone: " + (data.customerMobile || "N/A"),
+      "Email: " + (data.customerEmail || "N/A"), "",
+      "Submitted: " + (data.submittedAt || new Date().toISOString()),
+      "================================",
+    ].join("\n");
+    await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_key: env.WEB3FORMS_KEY,
+        subject: "New Flight Search - " + data.origin + " to " + data.destination,
+        from_name: "TrustedFare Website",
+        to: "gm@trustedfare.com",
+        replyto: data.customerEmail || "noreply@trustedfare.com",
+        message: messageBody,
+      }),
+    });
   } catch (e) { console.error("Email send failed:", e.message); }
 }
 
 async function sendBookingEmail(env, data, bookingId) {
   try {
-    const messageBody = ["NEW BOOKING - TRUSTEDFARE", "================================", "", "Booking ID: " + bookingId, "Route: " + data.origin + " to " + data.destination, "Departure: " + data.departure_date, data.return_date ? "Return: " + data.return_date : "One-way", "Cabin: " + (data.cabin_class || "economy"), "Price: " + (data.price_amount || "TBD") + " " + (data.price_currency || "INR"), "", "CUSTOMER", "Name: " + data.customer_name, "Phone: " + data.customer_mobile, "Email: " + data.customer_email, "", "Status: PENDING PAYMENT", "================================"].join("\n");
-    await fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ access_key: env.WEB3FORMS_KEY, subject: "New Booking " + bookingId + " - " + data.origin + " to " + data.destination, from_name: "TrustedFare Website", to: "gm@trustedfare.com", replyto: data.customer_email || "noreply@trustedfare.com", message: messageBody }) });
+    const messageBody = [
+      "NEW BOOKING - TRUSTEDFARE", "================================", "",
+      "Booking ID: " + bookingId,
+      "Route: " + data.origin + " to " + data.destination,
+      "Departure: " + data.departure_date,
+      data.return_date ? "Return: " + data.return_date : "One-way",
+      "Cabin: " + (data.cabin_class || "economy"),
+      "Price: " + (data.price_amount || "TBD") + " " + (data.price_currency || "INR"), "",
+      "CUSTOMER", "Name: " + data.customer_name, "Phone: " + data.customer_mobile, "Email: " + data.customer_email, "",
+      "Status: PENDING PAYMENT", "================================",
+    ].join("\n");
+    await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_key: env.WEB3FORMS_KEY,
+        subject: "New Booking " + bookingId + " - " + data.origin + " to " + data.destination,
+        from_name: "TrustedFare Website",
+        to: "gm@trustedfare.com",
+        replyto: data.customer_email || "noreply@trustedfare.com",
+        message: messageBody,
+      }),
+    });
   } catch (e) { console.error("Booking email failed:", e.message); }
 }
 
 async function sendPaymentEmail(env, booking, utr) {
   try {
-    const messageBody = ["PAYMENT SUBMITTED - TRUSTEDFARE", "================================", "", "Booking ID: " + booking.id, "Route: " + booking.origin + " to " + booking.destination, "Amount: " + (booking.price_amount || "N/A") + " " + (booking.price_currency || "INR"), "UTR Reference: " + utr, "", "Customer: " + booking.customer_name, "Phone: " + booking.customer_mobile, "Email: " + booking.customer_email, "", "Status: PENDING VERIFICATION", "================================"].join("\n");
-    await fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ access_key: env.WEB3FORMS_KEY, subject: "Payment Submitted for " + booking.id, from_name: "TrustedFare Website", to: "gm@trustedfare.com", replyto: booking.customer_email || "noreply@trustedfare.com", message: messageBody }) });
+    const messageBody = [
+      "PAYMENT SUBMITTED - TRUSTEDFARE", "================================", "",
+      "Booking ID: " + booking.id,
+      "Route: " + booking.origin + " to " + booking.destination,
+      "Amount: " + (booking.price_amount || "N/A") + " " + (booking.price_currency || "INR"),
+      "UTR Reference: " + utr, "",
+      "Customer: " + booking.customer_name, "Phone: " + booking.customer_mobile, "Email: " + booking.customer_email, "",
+      "Status: PENDING VERIFICATION", "================================",
+    ].join("\n");
+    await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_key: env.WEB3FORMS_KEY,
+        subject: "Payment Submitted for " + booking.id,
+        from_name: "TrustedFare Website",
+        to: "gm@trustedfare.com",
+        replyto: booking.customer_email || "noreply@trustedfare.com",
+        message: messageBody,
+      }),
+    });
   } catch (e) { console.error("Payment email failed:", e.message); }
 }
 
 async function sendTicketEmail(env, booking) {
   try {
-    const messageBody = ["TICKET CONFIRMED - TRUSTEDFARE", "================================", "", "Booking ID: " + booking.id, "Route: " + booking.origin + " to " + booking.destination, "Departure: " + booking.departure_date, "PNR: " + booking.pnr, "Ticket Number: " + (booking.ticket_number || "N/A"), "", "Customer: " + booking.customer_name, "", "Your flight ticket is confirmed. Thank you for choosing TrustedFare!", "================================"].join("\n");
-    await fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ access_key: env.WEB3FORMS_KEY, subject: "Ticket Confirmed - " + booking.id + " - " + booking.origin + " to " + booking.destination, from_name: "TrustedFare Website", to: booking.customer_email, replyto: "gm@trustedfare.com", message: messageBody }) });
+    const messageBody = [
+      "TICKET CONFIRMED - TRUSTEDFARE", "================================", "",
+      "Booking ID: " + booking.id,
+      "Route: " + booking.origin + " to " + booking.destination,
+      "Departure: " + booking.departure_date,
+      "PNR: " + booking.pnr,
+      "Ticket Number: " + (booking.ticket_number || "N/A"), "",
+      "Customer: " + booking.customer_name, "",
+      "Your flight ticket is confirmed. Thank you for choosing TrustedFare!",
+      "================================",
+    ].join("\n");
+    await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_key: env.WEB3FORMS_KEY,
+        subject: "Ticket Confirmed - " + booking.id + " - " + booking.origin + " to " + booking.destination,
+        from_name: "TrustedFare Website",
+        to: booking.customer_email,
+        replyto: "gm@trustedfare.com",
+        message: messageBody,
+      }),
+    });
   } catch (e) { console.error("Ticket email failed:", e.message); }
 }
 
