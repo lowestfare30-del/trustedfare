@@ -99,7 +99,7 @@ html+='<button class="btn-reject" onclick="verifyBooking(\''+b.id+'\',\'reject\'
 if(b.status==="processing"||b.status==="payment_pending"){
 html+='<button class="btn-ticket" onclick="toggleTicket(\''+b.id+'\')">ADD TICKET</button>';
 }
-html+='</div><div class="ticket-form" id="ticket-'+b.id+'"><input type="text" id="pnr-'+b.id+'" placeholder="PNR"><input type="text" id="ticketnum-'+b.id+'" placeholder="Ticket number"><input type="text" id="ticketpdf-'+b.id+'" placeholder="PDF link (optional)"><button onclick="addTicket(\''+b.id+'\')">SAVE</button></div></div>';
+html+='</div><div class="ticket-form" id="ticket-'+b.id+'"><input type="text" id="pnr-'+b.id+'" placeholder="PNR"><input type="text" id="ticketnum-'+b.id+'" placeholder="Ticket number"><label style="font-size:9px;color:#d5ad55;margin:4px 0;display:block">TICKET COPY (PDF/JPG/PNG)</label><input type="file" id="ticketfile-'+b.id+'" accept=".pdf,.jpg,.jpeg,.png" style="flex:1;min-width:120px;padding:8px;border:1px solid rgba(255,255,255,.15);border-radius:6px;background:rgba(255,255,255,.05);color:white;font-size:11px"><button onclick="addTicket(\''+b.id+'\')">SAVE</button></div></div>';
 }
 document.getElementById("bookingsList").innerHTML=html||'<div style="text-align:center;color:#8994a1;padding:40px">No bookings yet</div>';
 }
@@ -107,9 +107,18 @@ function verifyBooking(id,action){
 fetch("/api/admin/verify",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({booking_id:id,action:action})}).then(function(r){return r.json()}).then(function(res){alert(res.message||"Done");loadBookings()})}
 function toggleTicket(id){var el=document.getElementById("ticket-"+id);el.classList.toggle("show")}
 function addTicket(id){
-var pnr=document.getElementById("pnr-"+id).value,tnum=document.getElementById("ticketnum-"+id).value,tpdf=document.getElementById("ticketpdf-"+id).value;
+var pnr=document.getElementById("pnr-"+id).value,tnum=document.getElementById("ticketnum-"+id).value;
+var fileInput=document.getElementById("ticketfile-"+id);
 if(!pnr){alert("PNR is required");return}
-fetch("/api/admin/ticket",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({booking_id:id,pnr:pnr,ticket_number:tnum,ticket_pdf:tpdf})}).then(function(r){return r.json()}).then(function(res){alert(res.message||"Done");loadBookings()})}
+var fileData=null;
+if(fileInput&&fileInput.files&&fileInput.files[0]){
+var file=fileInput.files[0];
+var reader=new FileReader();
+reader.onload=function(){
+fetch("/api/admin/ticket",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({booking_id:id,pnr:pnr,ticket_number:tnum,ticket_file_data:reader.result,ticket_filename:file.name,ticket_filetype:file.type})}).then(function(r){return r.json()}).then(function(res){alert(res.message||"Done");loadBookings()})};
+reader.readAsDataURL(file);
+}else{
+fetch("/api/admin/ticket",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:JSON.stringify({booking_id:id,pnr:pnr,ticket_number:tnum})}).then(function(r){return r.json()}).then(function(res){alert(res.message||"Done");loadBookings()})}}
 </script>
 </body>
 </html>
