@@ -1,5 +1,4 @@
 -- TrustedFare D1 schema
--- Run this in the D1 console after creating the database
 
 CREATE TABLE IF NOT EXISTS bookings (
   id TEXT PRIMARY KEY,
