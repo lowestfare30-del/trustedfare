@@ -22,11 +22,13 @@ export default {
     if (url.pathname === "/api/enquiry" && request.method === "POST") return handleEnquiry(request, env, ctx);
     if (url.pathname === "/api/create-booking" && request.method === "POST") return handleCreateBooking(request, env, ctx);
     if (url.pathname === "/api/payment" && request.method === "POST") return handlePaymentSubmit(request, env, ctx);
+    if (url.pathname === "/api/upload-passport" && request.method === "POST") return handleUploadPassport(request, env, ctx);
     if (url.pathname === "/api/booking-status" && request.method === "GET") return handleBookingStatus(request, env, ctx);
     if (url.pathname === "/api/admin/login" && request.method === "POST") return handleAdminLogin(request, env, ctx);
     if (url.pathname === "/api/admin/bookings" && request.method === "GET") return handleAdminBookings(request, env, ctx);
     if (url.pathname === "/api/admin/verify" && request.method === "POST") return handleAdminVerify(request, env, ctx);
     if (url.pathname === "/api/admin/ticket" && request.method === "POST") return handleAdminTicket(request, env, ctx);
+    if (url.pathname === "/api/ticket-download" && request.method === "GET") return handleTicketDownload(request, env, ctx);
     return new Response("Not found", { status: 404 });
   },
 };
@@ -77,8 +79,6 @@ async function handleSearch(request, env, ctx) {
   if (data.children) apiBody.children = data.children;
   if (data.infants_in_seat) apiBody.infants_in_seat = data.infants_in_seat;
   if (data.infants_on_lap) apiBody.infants_on_lap = data.infants_on_lap;
-  // UI sends a single "infants" count → split correctly per API rules:
-  // lap infants cannot exceed adults; excess infants go in their own seat.
   if (data.infants) {
     const adults = data.adults || 1;
     if (data.infants <= adults) {
@@ -367,13 +367,63 @@ async function handleAdminTicket(request, env, ctx) {
   if (!data.booking_id || !data.pnr) return jsonResponse({ success: false, message: "Missing booking ID or PNR." }, 400, cors);
   if (!env.DB) return jsonResponse({ success: false, message: "Database not configured." }, 500, cors);
   try {
-    await env.DB.prepare("UPDATE bookings SET pnr = ?, ticket_number = ?, ticket_pdf = ?, status = 'confirmed', payment_status = 'verified', updated_at = datetime('now') WHERE id = ?").bind(data.pnr, data.ticket_number || "", data.ticket_pdf || "", data.booking_id).run();
+    if (data.ticket_file_data && env.ENQUIRIES) {
+      const ticketKey = "ticket:" + data.booking_id;
+      const ticketRecord = { booking_id: data.booking_id, filename: data.ticket_filename, filetype: data.ticket_filetype, uploaded_at: new Date().toISOString() };
+      const dataSize = data.ticket_file_data.length;
+      if (dataSize < 1000000) {
+        ctx.waitUntil(env.ENQUIRIES.put(ticketKey, JSON.stringify({ ...ticketRecord, file_data: data.ticket_file_data }), { expirationTtl: 7776000 }));
+      } else {
+        ctx.waitUntil(env.ENQUIRIES.put(ticketKey, JSON.stringify(ticketRecord), { expirationTtl: 7776000 }));
+      }
+    }
+    await env.DB.prepare("UPDATE bookings SET pnr = ?, ticket_number = ?, ticket_pdf = ?, status = 'confirmed', payment_status = 'verified', updated_at = datetime('now') WHERE id = ?").bind(data.pnr, data.ticket_number || "", data.ticket_filename || "", data.booking_id).run();
     const booking = await env.DB.prepare("SELECT * FROM bookings WHERE id = ?").bind(data.booking_id).first();
     if (env.WEB3FORMS_KEY && booking) ctx.waitUntil(sendTicketEmail(env, booking));
     return jsonResponse({ success: true, message: "Ticket added. Customer notified." }, 200, cors);
   } catch {
     return jsonResponse({ success: false, message: "Could not add ticket." }, 500, cors);
   }
+}
+
+// ─── Ticket Download ───────────────────────────────────────────
+async function handleTicketDownload(request, env, ctx) {
+  const cors = corsHeaders();
+  const url = new URL(request.url);
+  const bookingId = url.searchParams.get("id");
+  if (!bookingId) return jsonResponse({ success: false, message: "Missing booking ID." }, 400, cors);
+  if (!env.ENQUIRIES) return jsonResponse({ success: false, message: "Not configured." }, 500, cors);
+  const record = await env.ENQUIRIES.get("ticket:" + bookingId);
+  if (!record) return jsonResponse({ success: false, message: "No ticket found." }, 404, cors);
+  const parsed = JSON.parse(record);
+  if (parsed.file_data) {
+    const base64Data = parsed.file_data.split(",")[1] || parsed.file_data;
+    const binary = atob(base64Data);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new Response(bytes, { headers: { "Content-Type": parsed.filetype || "application/pdf", "Content-Disposition": 'attachment; filename="' + (parsed.filename || "ticket.pdf") + '"' } });
+  }
+  return jsonResponse({ success: false, message: "Ticket file not available." }, 404, cors);
+}
+
+// ─── Upload Passport ───────────────────────────────────────────
+async function handleUploadPassport(request, env, ctx) {
+  const cors = corsHeaders();
+  let data;
+  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON." }, 400, cors); }
+  if (!data.booking_id) return jsonResponse({ success: false, message: "Missing booking ID." }, 400, cors);
+  if (!data.data) return jsonResponse({ success: false, message: "No file data." }, 400, cors);
+  const key = "passport:" + data.booking_id + ":" + (data.passenger_index || 0);
+  const record = { booking_id: data.booking_id, passenger_index: data.passenger_index || 0, filename: data.filename, filetype: data.filetype, uploaded_at: new Date().toISOString() };
+  if (env.ENQUIRIES) {
+    const dataSize = data.data.length;
+    if (dataSize < 1000000) {
+      ctx.waitUntil(env.ENQUIRIES.put(key, JSON.stringify({ ...record, file_data: data.data }), { expirationTtl: 7776000 }));
+    } else {
+      ctx.waitUntil(env.ENQUIRIES.put(key, JSON.stringify(record), { expirationTtl: 7776000 }));
+    }
+  }
+  return jsonResponse({ success: true, message: "Passport uploaded.", filename: data.filename }, 200, cors);
 }
 
 // ─── Email Helpers ─────────────────────────────────────────────
