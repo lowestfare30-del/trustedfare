@@ -2,9 +2,19 @@ name = "trustedfare"
 main = "src/worker.js"
 compatibility_date = "2026-09-24"
 
-[[rules]]
-type = "Text"
-globs = ["**/*.html"]
+# Secrets (set via `wrangler secret put`):
+#   IGNAV_API_KEY  — API key for ignav.com flight search
+#   WEB3FORMS_KEY  — API key for web3forms.com email notifications
+#   ADMIN_PASSWORD — Admin panel password (default: trustedfare2026)
+
+# Static assets — pointed at ./public (contains only a placeholder .gitkeep)
+# so that node_modules/ is NEVER scanned for assets.
+# run_worker_first = true ensures the Worker handles ALL routing, since
+# every page (/, /admin, /robots.txt, /sitemap.xml, /flights/*, /api/*)
+# is generated dynamically by the Worker.
+[assets]
+directory = "./public"
+run_worker_first = true
 
 [[kv_namespaces]]
 binding = "ENQUIRIES"
@@ -14,3 +24,28 @@ id = "5aa25d7016784985ad8178eda34ba4d1"
 binding = "DB"
 database_name = "trustedfare-bookings"
 database_id = "369424af-fb33-4311-885b-78974ae16ff6"
+
+# Routes
+[[routes]]
+pattern = "trustedfare.com/*"
+zone_name = "trustedfare.com"
+
+[[routes]]
+pattern = "*.trustedfare.com/*"
+zone_name = "trustedfare.com"
+
+# Custom domains
+[[routes]]
+pattern = "trustedfare.com"
+zone_name = "trustedfare.com"
+custom_domain = true
+
+[[routes]]
+pattern = "www.trustedfare.com"
+zone_name = "trustedfare.com"
+custom_domain = true
+
+[[routes]]
+pattern = "skyscanner.trustedfare.com"
+zone_name = "trustedfare.com"
+custom_domain = true
