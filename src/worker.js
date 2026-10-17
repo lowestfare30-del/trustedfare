@@ -2,8 +2,8 @@ var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
 // src/worker.js
-import HTML_PAGE from "./59600b3ee8231eed567e6735a9062d49aa6d0d32-index.html";
-import ADMIN_PAGE from "./ee7a825e1c2e1de8daefa2997ddf7744e9ca1602-admin.html";
+import HTML_PAGE from "./index.html";
+import ADMIN_PAGE from "./admin.html";
 var IGNAV_BASE = "https://ignav.com/api";
 var ADMIN_PASSWORD = "trustedfare2026";
 var worker_default = {
