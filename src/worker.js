@@ -632,7 +632,7 @@ async function sendBookingEmail(env, data, bookingId) {
         subject: "New Booking " + bookingId + " - " + data.origin + " to " + data.destination,
         from_name: "TrustedFare Website",
         to: "gm@trustedfare.com",
-        replyto: data.customer_email || "noreply@trustedfare.com",
+        replyto: data.customer_email || "gm@trustedfare.com",
         message: messageBody
       })
     });
@@ -667,7 +667,7 @@ async function sendPaymentEmail(env, booking, utr) {
         subject: "Payment Submitted for " + booking.id,
         from_name: "TrustedFare Website",
         to: "gm@trustedfare.com",
-        replyto: booking.customer_email || "noreply@trustedfare.com",
+        replyto: booking.customer_email || "gm@trustedfare.com",
         message: messageBody
       })
     });
