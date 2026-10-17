@@ -1,10 +1,12 @@
-import HTML_PAGE from "./index.html";
-import ADMIN_PAGE from "./admin.html";
+var __defProp = Object.defineProperty;
+var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-const IGNAV_BASE = "https://ignav.com/api";
-const ADMIN_PASSWORD = "trustedfare2026";
-
-export default {
+// src/worker.js
+import HTML_PAGE from "./59600b3ee8231eed567e6735a9062d49aa6d0d32-index.html";
+import ADMIN_PAGE from "./ee7a825e1c2e1de8daefa2997ddf7744e9ca1602-admin.html";
+var IGNAV_BASE = "https://ignav.com/api";
+var ADMIN_PASSWORD = "trustedfare2026";
+var worker_default = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (request.method === "OPTIONS") {
@@ -12,8 +14,8 @@ export default {
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
+          "Access-Control-Allow-Headers": "Content-Type"
+        }
       });
     }
     if (url.pathname === "/" && request.method === "GET")
@@ -38,10 +40,8 @@ export default {
     if (url.pathname === "/api/admin/ticket" && request.method === "POST") return handleAdminTicket(request, env, ctx);
     if (url.pathname === "/api/ticket-download" && request.method === "GET") return handleTicketDownload(request, env, ctx);
     return new Response("Not found", { status: 404 });
-  },
+  }
 };
-
-// ─── Health Check ──────────────────────────────────────────────
 async function handleHealthCheck(request, env, ctx) {
   const cors = corsHeaders();
   try {
@@ -52,8 +52,7 @@ async function handleHealthCheck(request, env, ctx) {
     return jsonResponse({ ok: false, error: "Cannot reach Ignav API" }, 502, cors);
   }
 }
-
-// ─── Airport Search ────────────────────────────────────────────
+__name(handleHealthCheck, "handleHealthCheck");
 async function handleAirportSearch(request, env, ctx) {
   const cors = corsHeaders();
   const url = new URL(request.url);
@@ -73,12 +72,15 @@ async function handleAirportSearch(request, env, ctx) {
     return jsonResponse([], 200, cors);
   }
 }
-
-// ─── One-Way & Round-Trip Search ───────────────────────────────
+__name(handleAirportSearch, "handleAirportSearch");
 async function handleSearch(request, env, ctx) {
   const cors = corsHeaders();
   let data;
-  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors);
+  }
   if (!data.origin || !data.destination || !data.departure_date)
     return jsonResponse({ success: false, message: "Missing required fields." }, 400, cors);
   if (data.origin === data.destination)
@@ -101,7 +103,7 @@ async function handleSearch(request, env, ctx) {
       apiBody.infants_in_seat = data.infants - adults;
     }
   }
-  if (data.max_stops !== undefined && data.max_stops !== null) apiBody.max_stops = data.max_stops;
+  if (data.max_stops !== void 0 && data.max_stops !== null) apiBody.max_stops = data.max_stops;
   if (data.min_carry_on_bags) apiBody.min_carry_on_bags = data.min_carry_on_bags;
   if (data.min_checked_bags) apiBody.min_checked_bags = data.min_checked_bags;
   if (data.max_price) apiBody.max_price = data.max_price;
@@ -109,11 +111,11 @@ async function handleSearch(request, env, ctx) {
   if (isRoundTrip && data.return_time_range) apiBody.return_time_range = data.return_time_range;
   if (data.airlines_include) apiBody.airlines_include = data.airlines_include;
   if (data.airlines_exclude) apiBody.airlines_exclude = data.airlines_exclude;
-  if (data.allow_self_transfer !== undefined) apiBody.allow_self_transfer = data.allow_self_transfer;
+  if (data.allow_self_transfer !== void 0) apiBody.allow_self_transfer = data.allow_self_transfer;
   if (data.market) apiBody.market = data.market;
   if (env.ENQUIRIES) {
     const enquiryId = "enquiry_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-    ctx.waitUntil(env.ENQUIRIES.put(enquiryId, JSON.stringify(data), { expirationTtl: 7776000 }));
+    ctx.waitUntil(env.ENQUIRIES.put(enquiryId, JSON.stringify(data), { expirationTtl: 7776e3 }));
   }
   if (env.WEB3FORMS_KEY) ctx.waitUntil(sendNotificationEmail(env, data, isRoundTrip));
   if (!env.IGNAV_API_KEY)
@@ -122,7 +124,7 @@ async function handleSearch(request, env, ctx) {
     const apiResp = await fetch(endpoint, {
       method: "POST",
       headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" },
-      body: JSON.stringify(apiBody),
+      body: JSON.stringify(apiBody)
     });
     if (!apiResp.ok)
       return jsonResponse({ success: false, message: "Flight search temporarily unavailable. Call +91 6239946206." }, 502, cors);
@@ -132,12 +134,15 @@ async function handleSearch(request, env, ctx) {
     return jsonResponse({ success: false, message: "Unable to reach flight search." }, 502, cors);
   }
 }
-
-// ─── Multi-City / Flexible Search ──────────────────────────────
+__name(handleSearch, "handleSearch");
 async function handleMultiCitySearch(request, env, ctx) {
   const cors = corsHeaders();
   let data;
-  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors);
+  }
   if (!data.legs || !Array.isArray(data.legs) || data.legs.length === 0)
     return jsonResponse({ success: false, message: "Missing or invalid legs array." }, 400, cors);
   for (const leg of data.legs) {
@@ -151,8 +156,12 @@ async function handleMultiCitySearch(request, env, ctx) {
   if (data.infants_on_lap) apiBody.infants_on_lap = data.infants_on_lap;
   if (data.infants) {
     const adults = data.adults || 1;
-    if (data.infants <= adults) { apiBody.infants_on_lap = data.infants; }
-    else { apiBody.infants_on_lap = adults; apiBody.infants_in_seat = data.infants - adults; }
+    if (data.infants <= adults) {
+      apiBody.infants_on_lap = data.infants;
+    } else {
+      apiBody.infants_on_lap = adults;
+      apiBody.infants_in_seat = data.infants - adults;
+    }
   }
   if (data.cabin_class) apiBody.cabin_class = data.cabin_class;
   if (data.min_carry_on_bags) apiBody.min_carry_on_bags = data.min_carry_on_bags;
@@ -160,7 +169,7 @@ async function handleMultiCitySearch(request, env, ctx) {
   if (data.max_price) apiBody.max_price = data.max_price;
   if (data.airlines_include) apiBody.airlines_include = data.airlines_include;
   if (data.airlines_exclude) apiBody.airlines_exclude = data.airlines_exclude;
-  if (data.allow_self_transfer !== undefined) apiBody.allow_self_transfer = data.allow_self_transfer;
+  if (data.allow_self_transfer !== void 0) apiBody.allow_self_transfer = data.allow_self_transfer;
   if (data.market) apiBody.market = data.market;
   if (!env.IGNAV_API_KEY)
     return jsonResponse({ success: false, message: "Flight search is not configured." }, 500, cors);
@@ -168,7 +177,7 @@ async function handleMultiCitySearch(request, env, ctx) {
     const apiResp = await fetch(IGNAV_BASE + "/fares/search", {
       method: "POST",
       headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" },
-      body: JSON.stringify(apiBody),
+      body: JSON.stringify(apiBody)
     });
     if (!apiResp.ok)
       return jsonResponse({ success: false, message: "Flight search temporarily unavailable. Call +91 6239946206." }, 502, cors);
@@ -178,19 +187,22 @@ async function handleMultiCitySearch(request, env, ctx) {
     return jsonResponse({ success: false, message: "Unable to reach flight search." }, 502, cors);
   }
 }
-
-// ─── Booking Links ─────────────────────────────────────────────
+__name(handleMultiCitySearch, "handleMultiCitySearch");
 async function handleBookingLink(request, env, ctx) {
   const cors = corsHeaders();
   let data;
-  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors);
+  }
   if (!data.ignav_id) return jsonResponse({ success: false, message: "Missing ignav_id." }, 400, cors);
   if (!env.IGNAV_API_KEY) return jsonResponse({ success: false, message: "Booking not configured." }, 500, cors);
   try {
     const apiResp = await fetch(IGNAV_BASE + "/fares/booking-links", {
       method: "POST",
       headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" },
-      body: JSON.stringify({ ignav_id: data.ignav_id }),
+      body: JSON.stringify({ ignav_id: data.ignav_id })
     });
     if (!apiResp.ok) return jsonResponse({ success: false, message: "Could not retrieve booking link." }, 502, cors);
     const result = await apiResp.json();
@@ -205,7 +217,7 @@ async function handleBookingLink(request, env, ctx) {
               provider_type: link.provider_type,
               price: link.price,
               url: link.url,
-              leg_indexes: option.leg_indexes,
+              leg_indexes: option.leg_indexes
             });
             if (!bookingUrl) bookingUrl = link.url;
           }
@@ -217,18 +229,21 @@ async function handleBookingLink(request, env, ctx) {
       booking_url: bookingUrl,
       all_links: allLinks,
       itinerary: result.itinerary || null,
-      booking_options: result.booking_options || [],
+      booking_options: result.booking_options || []
     }, 200, cors);
   } catch {
     return jsonResponse({ success: false, message: "Could not retrieve booking link." }, 502, cors);
   }
 }
-
-// ─── Price Tracking (stores in KV) ─────────────────────────────
+__name(handleBookingLink, "handleBookingLink");
 async function handlePriceTrack(request, env, ctx) {
   const cors = corsHeaders();
   let data;
-  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors);
+  }
   if (!data.origin || !data.destination || !data.departure_date)
     return jsonResponse({ success: false, message: "Missing origin, destination, or departure_date." }, 400, cors);
   const trackKey = "track:" + data.origin + ":" + data.destination + ":" + data.departure_date;
@@ -243,24 +258,24 @@ async function handlePriceTrack(request, env, ctx) {
         origin: data.origin,
         destination: data.destination,
         departure_date: data.departure_date,
-        cabin_class: data.cabin_class || "economy",
-      }),
+        cabin_class: data.cabin_class || "economy"
+      })
     });
     if (!apiResp.ok) return jsonResponse({ success: false, message: "Flight search unavailable." }, 502, cors);
     const flightData = await apiResp.json();
-    const itineraries = (flightData.itineraries || []).filter(i => i.price && i.price.status === "verified");
+    const itineraries = (flightData.itineraries || []).filter((i) => i.price && i.price.status === "verified");
     if (itineraries.length === 0) return jsonResponse({ success: false, message: "No verified fares found." }, 200, cors);
-    const best = itineraries.reduce((a, b) => (parseFloat(a.price.amount) < parseFloat(b.price.amount) ? a : b));
+    const best = itineraries.reduce((a, b) => parseFloat(a.price.amount) < parseFloat(b.price.amount) ? a : b);
     const price = parseFloat(best.price.amount);
     const currency = best.price.currency;
-    const checkedAt = new Date().toISOString();
+    const checkedAt = (/* @__PURE__ */ new Date()).toISOString();
     let previous = null;
     if (env.ENQUIRIES) {
       const prev = await env.ENQUIRIES.get(trackKey);
       if (prev) previous = JSON.parse(prev);
     }
     const record = { price, currency, ignav_id: best.ignav_id, checked_at: checkedAt, origin: data.origin, destination: data.destination, departure_date: data.departure_date };
-    if (env.ENQUIRIES) ctx.waitUntil(env.ENQUIRIES.put(trackKey, JSON.stringify(record), { expirationTtl: 7776000 }));
+    if (env.ENQUIRIES) ctx.waitUntil(env.ENQUIRIES.put(trackKey, JSON.stringify(record), { expirationTtl: 7776e3 }));
     let alert = null;
     let bookingUrl = null;
     const dropped = previous && price <= previous.price * (1 - dropPercent / 100);
@@ -271,7 +286,7 @@ async function handlePriceTrack(request, env, ctx) {
         const bkResp = await fetch(IGNAV_BASE + "/fares/booking-links", {
           method: "POST",
           headers: { "X-Api-Key": env.IGNAV_API_KEY, "Content-Type": "application/json" },
-          body: JSON.stringify({ ignav_id: best.ignav_id }),
+          body: JSON.stringify({ ignav_id: best.ignav_id })
         });
         if (bkResp.ok) {
           const bkData = await bkResp.json();
@@ -280,7 +295,8 @@ async function handlePriceTrack(request, env, ctx) {
             if (firstOption.links && firstOption.links.length > 0) bookingUrl = firstOption.links[0].url;
           }
         }
-      } catch {}
+      } catch {
+      }
     }
     return jsonResponse({
       success: true,
@@ -290,13 +306,13 @@ async function handlePriceTrack(request, env, ctx) {
       checked_at: checkedAt,
       previous_price: previous ? previous.price : null,
       alert,
-      booking_url: bookingUrl,
+      booking_url: bookingUrl
     }, 200, cors);
   } catch {
     return jsonResponse({ success: false, message: "Unable to reach flight search." }, 502, cors);
   }
 }
-
+__name(handlePriceTrack, "handlePriceTrack");
 async function handlePriceTrackGet(request, env, ctx) {
   const cors = corsHeaders();
   const url = new URL(request.url);
@@ -311,23 +327,29 @@ async function handlePriceTrackGet(request, env, ctx) {
   if (!record) return jsonResponse({ success: false, message: "No tracking data found." }, 404, cors);
   return jsonResponse({ success: true, ...JSON.parse(record) }, 200, cors);
 }
-
-// ─── Enquiry ───────────────────────────────────────────────────
+__name(handlePriceTrackGet, "handlePriceTrackGet");
 async function handleEnquiry(request, env, ctx) {
   const cors = corsHeaders();
   let data;
-  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors);
+  }
   const enquiryId = "enquiry_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-  if (env.ENQUIRIES) ctx.waitUntil(env.ENQUIRIES.put(enquiryId, JSON.stringify(data), { expirationTtl: 7776000 }));
+  if (env.ENQUIRIES) ctx.waitUntil(env.ENQUIRIES.put(enquiryId, JSON.stringify(data), { expirationTtl: 7776e3 }));
   if (env.WEB3FORMS_KEY) ctx.waitUntil(sendNotificationEmail(env, data, !!data.return_date));
   return jsonResponse({ success: true, message: "Enquiry submitted.", enquiryId }, 200, cors);
 }
-
-// ─── Create Booking ────────────────────────────────────────────
+__name(handleEnquiry, "handleEnquiry");
 async function handleCreateBooking(request, env, ctx) {
   const cors = corsHeaders();
   let data;
-  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors);
+  }
   if (!data.origin || !data.destination || !data.departure_date || !data.customer_name || !data.customer_mobile || !data.customer_email)
     return jsonResponse({ success: false, message: "Missing required fields." }, 400, cors);
   if (!env.DB) return jsonResponse({ success: false, message: "Database not configured." }, 500, cors);
@@ -336,10 +358,23 @@ async function handleCreateBooking(request, env, ctx) {
     await env.DB.prepare(
       "INSERT INTO bookings (id, origin, destination, departure_date, return_date, cabin_class, adults, children, infants, price_amount, price_currency, ignav_id, status, customer_name, customer_mobile, customer_email, payment_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     ).bind(
-      bookingId, data.origin, data.destination, data.departure_date, data.return_date || null,
-      data.cabin_class || "economy", data.adults || 1, data.children || 0, data.infants || 0,
-      data.price_amount || null, data.price_currency || "INR", data.ignav_id || null,
-      "pending_payment", data.customer_name, data.customer_mobile, data.customer_email, "pending"
+      bookingId,
+      data.origin,
+      data.destination,
+      data.departure_date,
+      data.return_date || null,
+      data.cabin_class || "economy",
+      data.adults || 1,
+      data.children || 0,
+      data.infants || 0,
+      data.price_amount || null,
+      data.price_currency || "INR",
+      data.ignav_id || null,
+      "pending_payment",
+      data.customer_name,
+      data.customer_mobile,
+      data.customer_email,
+      "pending"
     ).run();
     if (data.passengers && Array.isArray(data.passengers)) {
       for (const p of data.passengers) {
@@ -355,12 +390,15 @@ async function handleCreateBooking(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not create booking. Please try again." }, 500, cors);
   }
 }
-
-// ─── Payment Submit ────────────────────────────────────────────
+__name(handleCreateBooking, "handleCreateBooking");
 async function handlePaymentSubmit(request, env, ctx) {
   const cors = corsHeaders();
   let data;
-  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors);
+  }
   if (!data.booking_id || !data.utr_reference)
     return jsonResponse({ success: false, message: "Missing booking ID or UTR reference." }, 400, cors);
   if (!env.DB) return jsonResponse({ success: false, message: "Database not configured." }, 500, cors);
@@ -377,8 +415,7 @@ async function handlePaymentSubmit(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not submit payment." }, 500, cors);
   }
 }
-
-// ─── Booking Status ────────────────────────────────────────────
+__name(handlePaymentSubmit, "handlePaymentSubmit");
 async function handleBookingStatus(request, env, ctx) {
   const cors = corsHeaders();
   const url = new URL(request.url);
@@ -393,17 +430,20 @@ async function handleBookingStatus(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not fetch booking." }, 500, cors);
   }
 }
-
-// ─── Admin Endpoints ────────────────────────────────────────────
+__name(handleBookingStatus, "handleBookingStatus");
 async function handleAdminLogin(request, env, ctx) {
   const cors = corsHeaders();
   let data;
-  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors);
+  }
   if (data.password === ADMIN_PASSWORD)
     return jsonResponse({ success: true, token: "admin-token-" + Date.now() }, 200, cors);
   return jsonResponse({ success: false, message: "Invalid password." }, 401, cors);
 }
-
+__name(handleAdminLogin, "handleAdminLogin");
 async function handleAdminBookings(request, env, ctx) {
   const cors = corsHeaders();
   const auth = request.headers.get("Authorization") || "";
@@ -416,13 +456,17 @@ async function handleAdminBookings(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not fetch bookings." }, 500, cors);
   }
 }
-
+__name(handleAdminBookings, "handleAdminBookings");
 async function handleAdminVerify(request, env, ctx) {
   const cors = corsHeaders();
   const auth = request.headers.get("Authorization") || "";
   if (!auth.startsWith("Bearer admin-token-")) return jsonResponse({ success: false, message: "Unauthorized." }, 401, cors);
   let data;
-  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors);
+  }
   if (!data.booking_id || !data.action) return jsonResponse({ success: false, message: "Missing booking ID or action." }, 400, cors);
   if (!env.DB) return jsonResponse({ success: false, message: "Database not configured." }, 500, cors);
   try {
@@ -438,24 +482,28 @@ async function handleAdminVerify(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not update booking." }, 500, cors);
   }
 }
-
+__name(handleAdminVerify, "handleAdminVerify");
 async function handleAdminTicket(request, env, ctx) {
   const cors = corsHeaders();
   const auth = request.headers.get("Authorization") || "";
   if (!auth.startsWith("Bearer admin-token-")) return jsonResponse({ success: false, message: "Unauthorized." }, 401, cors);
   let data;
-  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors); }
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors);
+  }
   if (!data.booking_id || !data.pnr) return jsonResponse({ success: false, message: "Missing booking ID or PNR." }, 400, cors);
   if (!env.DB) return jsonResponse({ success: false, message: "Database not configured." }, 500, cors);
   try {
     if (data.ticket_file_data && env.ENQUIRIES) {
       const ticketKey = "ticket:" + data.booking_id;
-      const ticketRecord = { booking_id: data.booking_id, filename: data.ticket_filename, filetype: data.ticket_filetype, uploaded_at: new Date().toISOString() };
+      const ticketRecord = { booking_id: data.booking_id, filename: data.ticket_filename, filetype: data.ticket_filetype, uploaded_at: (/* @__PURE__ */ new Date()).toISOString() };
       const dataSize = data.ticket_file_data.length;
-      if (dataSize < 1000000) {
-        ctx.waitUntil(env.ENQUIRIES.put(ticketKey, JSON.stringify({ ...ticketRecord, file_data: data.ticket_file_data }), { expirationTtl: 7776000 }));
+      if (dataSize < 1e6) {
+        ctx.waitUntil(env.ENQUIRIES.put(ticketKey, JSON.stringify({ ...ticketRecord, file_data: data.ticket_file_data }), { expirationTtl: 7776e3 }));
       } else {
-        ctx.waitUntil(env.ENQUIRIES.put(ticketKey, JSON.stringify(ticketRecord), { expirationTtl: 7776000 }));
+        ctx.waitUntil(env.ENQUIRIES.put(ticketKey, JSON.stringify(ticketRecord), { expirationTtl: 7776e3 }));
       }
     }
     await env.DB.prepare("UPDATE bookings SET pnr = ?, ticket_number = ?, ticket_pdf = ?, status = 'confirmed', payment_status = 'verified', updated_at = datetime('now') WHERE id = ?").bind(data.pnr, data.ticket_number || "", data.ticket_filename || "", data.booking_id).run();
@@ -466,8 +514,7 @@ async function handleAdminTicket(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not add ticket." }, 500, cors);
   }
 }
-
-// ─── Ticket Download ───────────────────────────────────────────
+__name(handleAdminTicket, "handleAdminTicket");
 async function handleTicketDownload(request, env, ctx) {
   const cors = corsHeaders();
   const url = new URL(request.url);
@@ -485,34 +532,36 @@ async function handleTicketDownload(request, env, ctx) {
     return new Response(bytes, {
       headers: {
         "Content-Type": parsed.filetype || "application/pdf",
-        "Content-Disposition": 'attachment; filename="' + (parsed.filename || "ticket.pdf") + '"',
-      },
+        "Content-Disposition": 'attachment; filename="' + (parsed.filename || "ticket.pdf") + '"'
+      }
     });
   }
   return jsonResponse({ success: false, message: "Ticket file not available." }, 404, cors);
 }
-
-// ─── Upload Passport ───────────────────────────────────────────
+__name(handleTicketDownload, "handleTicketDownload");
 async function handleUploadPassport(request, env, ctx) {
   const cors = corsHeaders();
   let data;
-  try { data = await request.json(); } catch { return jsonResponse({ success: false, message: "Invalid JSON." }, 400, cors); }
+  try {
+    data = await request.json();
+  } catch {
+    return jsonResponse({ success: false, message: "Invalid JSON." }, 400, cors);
+  }
   if (!data.booking_id) return jsonResponse({ success: false, message: "Missing booking ID." }, 400, cors);
   if (!data.data) return jsonResponse({ success: false, message: "No file data." }, 400, cors);
   const key = "passport:" + data.booking_id + ":" + (data.passenger_index || 0);
-  const record = { booking_id: data.booking_id, passenger_index: data.passenger_index || 0, filename: data.filename, filetype: data.filetype, uploaded_at: new Date().toISOString() };
+  const record = { booking_id: data.booking_id, passenger_index: data.passenger_index || 0, filename: data.filename, filetype: data.filetype, uploaded_at: (/* @__PURE__ */ new Date()).toISOString() };
   if (env.ENQUIRIES) {
     const dataSize = data.data.length;
-    if (dataSize < 1000000) {
-      ctx.waitUntil(env.ENQUIRIES.put(key, JSON.stringify({ ...record, file_data: data.data }), { expirationTtl: 7776000 }));
+    if (dataSize < 1e6) {
+      ctx.waitUntil(env.ENQUIRIES.put(key, JSON.stringify({ ...record, file_data: data.data }), { expirationTtl: 7776e3 }));
     } else {
-      ctx.waitUntil(env.ENQUIRIES.put(key, JSON.stringify(record), { expirationTtl: 7776000 }));
+      ctx.waitUntil(env.ENQUIRIES.put(key, JSON.stringify(record), { expirationTtl: 7776e3 }));
     }
   }
   return jsonResponse({ success: true, message: "Passport uploaded.", filename: data.filename }, 200, cors);
 }
-
-// ─── Email Helpers ─────────────────────────────────────────────
+__name(handleUploadPassport, "handleUploadPassport");
 async function sendNotificationEmail(env, data, isRoundTrip) {
   try {
     const tp = [];
@@ -521,17 +570,21 @@ async function sendNotificationEmail(env, data, isRoundTrip) {
     if (data.infants) tp.push(data.infants + " Infant(s)");
     const travelerSummary = tp.join(", ") || "1 Adult";
     const messageBody = [
-      "NEW FLIGHT SEARCH - TRUSTEDFARE", "================================", "",
+      "NEW FLIGHT SEARCH - TRUSTEDFARE",
+      "================================",
+      "",
       "Route: " + data.origin + " to " + data.destination,
       "Departure: " + data.departure_date,
       isRoundTrip ? "Return: " + data.return_date : "One-way",
       "Cabin: " + (data.cabin_class || "economy"),
-      "Travelers: " + travelerSummary, "",
+      "Travelers: " + travelerSummary,
+      "",
       "CUSTOMER CONTACT",
       "Phone: " + (data.customerMobile || "N/A"),
-      "Email: " + (data.customerEmail || "N/A"), "",
-      "Submitted: " + (data.submittedAt || new Date().toISOString()),
-      "================================",
+      "Email: " + (data.customerEmail || "N/A"),
+      "",
+      "Submitted: " + (data.submittedAt || (/* @__PURE__ */ new Date()).toISOString()),
+      "================================"
     ].join("\n");
     await fetch("https://api.web3forms.com/submit", {
       method: "POST",
@@ -542,24 +595,34 @@ async function sendNotificationEmail(env, data, isRoundTrip) {
         from_name: "TrustedFare Website",
         to: "gm@trustedfare.com",
         replyto: data.customerEmail || "noreply@trustedfare.com",
-        message: messageBody,
-      }),
+        message: messageBody
+      })
     });
-  } catch (e) { console.error("Email send failed:", e.message); }
+  } catch (e) {
+    console.error("Email send failed:", e.message);
+  }
 }
-
+__name(sendNotificationEmail, "sendNotificationEmail");
 async function sendBookingEmail(env, data, bookingId) {
   try {
     const messageBody = [
-      "NEW BOOKING - TRUSTEDFARE", "================================", "",
+      "NEW BOOKING - TRUSTEDFARE",
+      "================================",
+      "",
       "Booking ID: " + bookingId,
       "Route: " + data.origin + " to " + data.destination,
       "Departure: " + data.departure_date,
       data.return_date ? "Return: " + data.return_date : "One-way",
       "Cabin: " + (data.cabin_class || "economy"),
-      "Price: " + (data.price_amount || "TBD") + " " + (data.price_currency || "INR"), "",
-      "CUSTOMER", "Name: " + data.customer_name, "Phone: " + data.customer_mobile, "Email: " + data.customer_email, "",
-      "Status: PENDING PAYMENT", "================================",
+      "Price: " + (data.price_amount || "TBD") + " " + (data.price_currency || "INR"),
+      "",
+      "CUSTOMER",
+      "Name: " + data.customer_name,
+      "Phone: " + data.customer_mobile,
+      "Email: " + data.customer_email,
+      "",
+      "Status: PENDING PAYMENT",
+      "================================"
     ].join("\n");
     await fetch("https://api.web3forms.com/submit", {
       method: "POST",
@@ -570,22 +633,31 @@ async function sendBookingEmail(env, data, bookingId) {
         from_name: "TrustedFare Website",
         to: "gm@trustedfare.com",
         replyto: data.customer_email || "noreply@trustedfare.com",
-        message: messageBody,
-      }),
+        message: messageBody
+      })
     });
-  } catch (e) { console.error("Booking email failed:", e.message); }
+  } catch (e) {
+    console.error("Booking email failed:", e.message);
+  }
 }
-
+__name(sendBookingEmail, "sendBookingEmail");
 async function sendPaymentEmail(env, booking, utr) {
   try {
     const messageBody = [
-      "PAYMENT SUBMITTED - TRUSTEDFARE", "================================", "",
+      "PAYMENT SUBMITTED - TRUSTEDFARE",
+      "================================",
+      "",
       "Booking ID: " + booking.id,
       "Route: " + booking.origin + " to " + booking.destination,
       "Amount: " + (booking.price_amount || "N/A") + " " + (booking.price_currency || "INR"),
-      "UTR Reference: " + utr, "",
-      "Customer: " + booking.customer_name, "Phone: " + booking.customer_mobile, "Email: " + booking.customer_email, "",
-      "Status: PENDING VERIFICATION", "================================",
+      "UTR Reference: " + utr,
+      "",
+      "Customer: " + booking.customer_name,
+      "Phone: " + booking.customer_mobile,
+      "Email: " + booking.customer_email,
+      "",
+      "Status: PENDING VERIFICATION",
+      "================================"
     ].join("\n");
     await fetch("https://api.web3forms.com/submit", {
       method: "POST",
@@ -596,24 +668,30 @@ async function sendPaymentEmail(env, booking, utr) {
         from_name: "TrustedFare Website",
         to: "gm@trustedfare.com",
         replyto: booking.customer_email || "noreply@trustedfare.com",
-        message: messageBody,
-      }),
+        message: messageBody
+      })
     });
-  } catch (e) { console.error("Payment email failed:", e.message); }
+  } catch (e) {
+    console.error("Payment email failed:", e.message);
+  }
 }
-
+__name(sendPaymentEmail, "sendPaymentEmail");
 async function sendTicketEmail(env, booking) {
   try {
     const messageBody = [
-      "TICKET CONFIRMED - TRUSTEDFARE", "================================", "",
+      "TICKET CONFIRMED - TRUSTEDFARE",
+      "================================",
+      "",
       "Booking ID: " + booking.id,
       "Route: " + booking.origin + " to " + booking.destination,
       "Departure: " + booking.departure_date,
       "PNR: " + booking.pnr,
-      "Ticket Number: " + (booking.ticket_number || "N/A"), "",
-      "Customer: " + booking.customer_name, "",
+      "Ticket Number: " + (booking.ticket_number || "N/A"),
+      "",
+      "Customer: " + booking.customer_name,
+      "",
       "Your flight ticket is confirmed. Thank you for choosing TrustedFare!",
-      "================================",
+      "================================"
     ].join("\n");
     await fetch("https://api.web3forms.com/submit", {
       method: "POST",
@@ -624,17 +702,23 @@ async function sendTicketEmail(env, booking) {
         from_name: "TrustedFare Website",
         to: booking.customer_email,
         replyto: "gm@trustedfare.com",
-        message: messageBody,
-      }),
+        message: messageBody
+      })
     });
-  } catch (e) { console.error("Ticket email failed:", e.message); }
+  } catch (e) {
+    console.error("Ticket email failed:", e.message);
+  }
 }
-
-// ─── Utils ─────────────────────────────────────────────────────
+__name(sendTicketEmail, "sendTicketEmail");
 function corsHeaders() {
   return { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
 }
-
+__name(corsHeaders, "corsHeaders");
 function jsonResponse(obj, status, headers) {
   return new Response(JSON.stringify(obj), { status, headers });
 }
+__name(jsonResponse, "jsonResponse");
+export {
+  worker_default as default
+};
+//# sourceMappingURL=worker.js.map
