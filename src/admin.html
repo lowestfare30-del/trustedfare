@@ -76,9 +76,9 @@ renderBookings(res.bookings||[])}).catch(function(){})}
 function statusBadge(s){if(s==="pending_payment"||s==="payment_pending")return'<span class="badge pending">PENDING PAYMENT</span>';if(s==="processing")return'<span class="badge verified">VERIFIED</span>';if(s==="confirmed")return'<span class="badge confirmed">CONFIRMED</span>';if(s==="payment_rejected")return'<span class="badge rejected">REJECTED</span>';return'<span class="badge pending">'+s+'</span>'}
 function renderBookings(bookings){
 document.getElementById("statTotal").textContent=bookings.length;
-var pending=bookings.filter(function(b){return b.status==="pending_payment"||b.status==="payment_pending"}).length;
-var verified=bookings.filter(function(b){return b.status==="processing"}).length;
-var confirmed=bookings.filter(function(b){return b.status==="confirmed"}).length;
+var pending=bookings.filter(function(b){return b.status=="pending_payment"||b.status=="payment_pending"}).length;
+var verified=bookings.filter(function(b){return b.status=="processing"}).length;
+var confirmed=bookings.filter(function(b){return b.status=="confirmed"}).length;
 document.getElementById("statPending").textContent=pending;
 document.getElementById("statVerified").textContent=verified;
 document.getElementById("statConfirmed").textContent=confirmed;
@@ -92,11 +92,11 @@ html+='<div><strong>Customer:</strong> '+b.customer_name+'</div><div><strong>Pho
 html+='<div><strong>Email:</strong> '+b.customer_email+'</div><div><strong>UTR:</strong> '+(b.utr_reference||'-')+'</div>';
 if(b.pnr)html+='<div><strong>PNR:</strong> '+b.pnr+'</div><div><strong>Ticket:</strong> '+(b.ticket_number||'-')+'</div>';
 html+='</div><div class="actions">';
-if(b.status==="pending_payment"||b.status==="payment_pending"){
+if(b.status=="pending_payment"||b.status=="payment_pending"){
 html+='<button class="btn-approve" onclick="verifyBooking(\''+b.id+'\',\'approve\')">VERIFY PAYMENT</button>';
 html+='<button class="btn-reject" onclick="verifyBooking(\''+b.id+'\',\'reject\')">REJECT</button>';
 }
-if(b.status==="processing"||b.status==="payment_pending"){
+if(b.status=="processing"||b.status=="payment_pending"){
 html+='<button class="btn-ticket" onclick="toggleTicket(\''+b.id+'\')">ADD TICKET</button>';
 }
 html+='</div><div class="ticket-form" id="ticket-'+b.id+'"><input type="text" id="pnr-'+b.id+'" placeholder="PNR"><input type="text" id="ticketnum-'+b.id+'" placeholder="Ticket number"><label style="font-size:9px;color:#d5ad55;margin:4px 0;display:block">TICKET COPY (PDF/JPG/PNG)</label><input type="file" id="ticketfile-'+b.id+'" accept=".pdf,.jpg,.jpeg,.png" style="flex:1;min-width:120px;padding:8px;border:1px solid rgba(255,255,255,.15);border-radius:6px;background:rgba(255,255,255,.05);color:white;font-size:11px"><button onclick="addTicket(\''+b.id+'\')">SAVE</button></div></div>';
