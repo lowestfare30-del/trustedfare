@@ -594,7 +594,7 @@ async function sendNotificationEmail(env, data, isRoundTrip) {
         subject: "New Flight Search - " + data.origin + " to " + data.destination,
         from_name: "TrustedFare Website",
         to: "gm@trustedfare.com",
-        replyto: data.customerEmail || "noreply@trustedfare.com",
+        replyto: data.customerEmail || "gm@trustedfare.com",
         message: messageBody
       })
     });
