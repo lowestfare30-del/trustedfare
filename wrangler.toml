@@ -18,7 +18,7 @@ run_worker_first = true
 
 [[kv_namespaces]]
 binding = "ENQUIRIES"
-id = "5aa25d7016784985ad8178eda34ba4d1"
+id = "ec560cf760624dd9be138092d04d76b3"
 
 [[d1_databases]]
 binding = "DB"
