@@ -23,7 +23,7 @@ id = "ec560cf760624dd9be138092d04d76b3"
 [[d1_databases]]
 binding = "DB"
 database_name = "trustedfare-bookings"
-database_id = "369424af-fb33-4311-885b-78974ae16ff6"
+database_id = "1f2eda1b-92ba-4633-8fcf-bc7a3d6f43b7"
 
 # Routes
 [[routes]]
