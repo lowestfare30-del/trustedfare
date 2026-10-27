@@ -18,10 +18,53 @@ var worker_default = {
         }
       });
     }
-    if (url.pathname === "/" && request.method === "GET")
+        if (url.pathname === "/" && request.method === "GET")
       return new Response(HTML_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
     if (url.pathname === "/admin" && request.method === "GET")
       return new Response(ADMIN_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+
+    // ===== COUNTRY SUBDOMAINS =====
+    const COUNTRY_SUBDOMAINS = [
+      "in","us","ca","uk","sg","au","ae","sa","my","ph","th","id","vn","hk","nz","ie",
+      "za","ng","pk","bd","lk","np","jp","kr","kw","qa","bh","om","de","fr","it","es",
+      "nl","se","no","dk","fi","pl","tr","ru","br","mx","ar","cl","co","pe","eg","ke",
+      "gh","et","at","ch","be","pt","cn"
+    ];
+    const _host = url.hostname.split(".")[0];
+    if (COUNTRY_SUBDOMAINS.includes(_host) && request.method === "GET")
+      return new Response(HTML_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+
+    // ===== COUNTRY PATHS (/in, /us, /ca, etc.) =====
+    if (COUNTRY_SUBDOMAINS.includes(url.pathname) && request.method === "GET")
+      return new Response(HTML_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+
+    // ===== ROBOTS.TXT =====
+    if (url.pathname === "/robots.txt" && request.method === "GET") {
+      const robotsTxt = `User-agent: *
+Allow: /
+Disallow: /admin
+Sitemap: https://trustedfare.com/sitemap.xml`;
+      return new Response(robotsTxt, { headers: { "Content-Type": "text/plain" } });
+    }
+
+    // ===== SITEMAP.XML =====
+    if (url.pathname === "/sitemap.xml" && request.method === "GET") {
+      const countries = COUNTRY_SUBDOMAINS.map(c => 
+        `  <url><loc>https://${c}.trustedfare.com/</loc><changefreq>daily</changefreq><priority>0.9</priority></url>`
+      ).join('\n');
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://trustedfare.com/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+${countries}
+</urlset>`;
+      return new Response(sitemap, { headers: { "Content-Type": "application/xml" } });
+    }
+
+    // ===== LOGO.SVG =====
+    if (url.pathname === "/logo.svg" && request.method === "GET")
+      return new Response(LOGO_SVG, { headers: { "Content-Type": "image/svg+xml" } });
+
+    // ===== API ROUTES (existing code continues) =====
     if (url.pathname === "/api/search" && request.method === "POST") return handleSearch(request, env, ctx);
     if (url.pathname === "/api/search/multi-city" && request.method === "POST") return handleMultiCitySearch(request, env, ctx);
     if (url.pathname === "/api/booking-link" && request.method === "POST") return handleBookingLink(request, env, ctx);
