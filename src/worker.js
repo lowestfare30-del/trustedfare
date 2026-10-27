@@ -31,8 +31,17 @@ var worker_default = {
       "gh","et","at","ch","be","pt","cn"
     ];
     const _host = url.hostname.split(".")[0];
-    if (COUNTRY_SUBDOMAINS.includes(_host) && request.method === "GET")
-      return new Response(HTML_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+    if (url.pathname === "/sitemap.xml" && request.method === "GET") {
+      const lastmod = new Date().toISOString().slice(0, 10);
+      const countries = COUNTRY_SUBDOMAINS.map(
+        (c) => `  <url><loc>https://${c}.trustedfare.com/</loc><lastmod>${lastmod}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>`
+      ).join("\n");
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://trustedfare.com/</loc><lastmod>${lastmod}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
+${countries}
+</urlset>`;
+      return new Response(sitemap, { headers: { "Content-Type": "application/xml" } });
 
     // ===== COUNTRY PATHS (/in, /us, /ca, etc.) =====
     if (COUNTRY_SUBDOMAINS.includes(url.pathname) && request.method === "GET")
