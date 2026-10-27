@@ -4,15 +4,11 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
 // src/worker.js
 import HTML_PAGE from "./index.html";
 import ADMIN_PAGE from "./admin.html";
-
-const IGNAV_BASE = "https://ignav.com/api";
-const ADMIN_PASSWORD = "trustedfare2026";
-const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50"><text x="10" y="35" font-family="Arial" font-size="28" font-weight="bold" fill="#1a73e8">TrustedFare</text></svg>`;
-
-export default {
+var IGNAV_BASE = "https://ignav.com/api";
+var ADMIN_PASSWORD = "trustedfare2026";
+var worker_default = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -22,10 +18,8 @@ export default {
         }
       });
     }
-
-    if (url.pathname === "/" && request.method === "GET")
+        if (url.pathname === "/" && request.method === "GET")
       return new Response(HTML_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
-
     if (url.pathname === "/admin" && request.method === "GET")
       return new Response(ADMIN_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 
@@ -36,8 +30,7 @@ export default {
       "nl","se","no","dk","fi","pl","tr","ru","br","mx","ar","cl","co","pe","eg","ke",
       "gh","et","at","ch","be","pt","cn"
     ];
-
-    // ===== SITEMAP.XML (with lastmod) =====
+    const _host = url.hostname.split(".")[0];
     if (url.pathname === "/sitemap.xml" && request.method === "GET") {
       const lastmod = new Date().toISOString().slice(0, 10);
       const countries = COUNTRY_SUBDOMAINS.map(
@@ -49,7 +42,6 @@ export default {
 ${countries}
 </urlset>`;
       return new Response(sitemap, { headers: { "Content-Type": "application/xml" } });
-    }
 
     // ===== COUNTRY PATHS (/in, /us, /ca, etc.) =====
     if (COUNTRY_SUBDOMAINS.includes(url.pathname) && request.method === "GET")
@@ -64,11 +56,24 @@ Sitemap: https://trustedfare.com/sitemap.xml`;
       return new Response(robotsTxt, { headers: { "Content-Type": "text/plain" } });
     }
 
+    // ===== SITEMAP.XML =====
+    if (url.pathname === "/sitemap.xml" && request.method === "GET") {
+      const countries = COUNTRY_SUBDOMAINS.map(c => 
+        `  <url><loc>https://${c}.trustedfare.com/</loc><changefreq>daily</changefreq><priority>0.9</priority></url>`
+      ).join('\n');
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://trustedfare.com/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+${countries}
+</urlset>`;
+      return new Response(sitemap, { headers: { "Content-Type": "application/xml" } });
+    }
+
     // ===== LOGO.SVG =====
     if (url.pathname === "/logo.svg" && request.method === "GET")
       return new Response(LOGO_SVG, { headers: { "Content-Type": "image/svg+xml" } });
 
-    // ===== API ROUTES =====
+    // ===== API ROUTES (existing code continues) =====
     if (url.pathname === "/api/search" && request.method === "POST") return handleSearch(request, env, ctx);
     if (url.pathname === "/api/search/multi-city" && request.method === "POST") return handleMultiCitySearch(request, env, ctx);
     if (url.pathname === "/api/booking-link" && request.method === "POST") return handleBookingLink(request, env, ctx);
@@ -89,7 +94,6 @@ Sitemap: https://trustedfare.com/sitemap.xml`;
     return new Response("Not found", { status: 404 });
   }
 };
-
 async function handleHealthCheck(request, env, ctx) {
   const cors = corsHeaders();
   try {
@@ -100,7 +104,7 @@ async function handleHealthCheck(request, env, ctx) {
     return jsonResponse({ ok: false, error: "Cannot reach Ignav API" }, 502, cors);
   }
 }
-
+__name(handleHealthCheck, "handleHealthCheck");
 async function handleAirportSearch(request, env, ctx) {
   const cors = corsHeaders();
   const url = new URL(request.url);
@@ -120,7 +124,7 @@ async function handleAirportSearch(request, env, ctx) {
     return jsonResponse([], 200, cors);
   }
 }
-
+__name(handleAirportSearch, "handleAirportSearch");
 async function handleSearch(request, env, ctx) {
   const cors = corsHeaders();
   let data;
@@ -151,7 +155,7 @@ async function handleSearch(request, env, ctx) {
       apiBody.infants_in_seat = data.infants - adults;
     }
   }
-  if (data.max_stops !== undefined && data.max_stops !== null) apiBody.max_stops = data.max_stops;
+  if (data.max_stops !== void 0 && data.max_stops !== null) apiBody.max_stops = data.max_stops;
   if (data.min_carry_on_bags) apiBody.min_carry_on_bags = data.min_carry_on_bags;
   if (data.min_checked_bags) apiBody.min_checked_bags = data.min_checked_bags;
   if (data.max_price) apiBody.max_price = data.max_price;
@@ -159,11 +163,11 @@ async function handleSearch(request, env, ctx) {
   if (isRoundTrip && data.return_time_range) apiBody.return_time_range = data.return_time_range;
   if (data.airlines_include) apiBody.airlines_include = data.airlines_include;
   if (data.airlines_exclude) apiBody.airlines_exclude = data.airlines_exclude;
-  if (data.allow_self_transfer !== undefined) apiBody.allow_self_transfer = data.allow_self_transfer;
+  if (data.allow_self_transfer !== void 0) apiBody.allow_self_transfer = data.allow_self_transfer;
   if (data.market) apiBody.market = data.market;
   if (env.ENQUIRIES) {
     const enquiryId = "enquiry_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-    ctx.waitUntil(env.ENQUIRIES.put(enquiryId, JSON.stringify(data), { expirationTtl: 7776000 }));
+    ctx.waitUntil(env.ENQUIRIES.put(enquiryId, JSON.stringify(data), { expirationTtl: 7776e3 }));
   }
   if (env.WEB3FORMS_KEY) ctx.waitUntil(sendNotificationEmail(env, data, isRoundTrip));
   if (!env.IGNAV_API_KEY)
@@ -182,7 +186,7 @@ async function handleSearch(request, env, ctx) {
     return jsonResponse({ success: false, message: "Unable to reach flight search." }, 502, cors);
   }
 }
-
+__name(handleSearch, "handleSearch");
 async function handleMultiCitySearch(request, env, ctx) {
   const cors = corsHeaders();
   let data;
@@ -217,7 +221,7 @@ async function handleMultiCitySearch(request, env, ctx) {
   if (data.max_price) apiBody.max_price = data.max_price;
   if (data.airlines_include) apiBody.airlines_include = data.airlines_include;
   if (data.airlines_exclude) apiBody.airlines_exclude = data.airlines_exclude;
-  if (data.allow_self_transfer !== undefined) apiBody.allow_self_transfer = data.allow_self_transfer;
+  if (data.allow_self_transfer !== void 0) apiBody.allow_self_transfer = data.allow_self_transfer;
   if (data.market) apiBody.market = data.market;
   if (!env.IGNAV_API_KEY)
     return jsonResponse({ success: false, message: "Flight search is not configured." }, 500, cors);
@@ -235,7 +239,7 @@ async function handleMultiCitySearch(request, env, ctx) {
     return jsonResponse({ success: false, message: "Unable to reach flight search." }, 502, cors);
   }
 }
-
+__name(handleMultiCitySearch, "handleMultiCitySearch");
 async function handleBookingLink(request, env, ctx) {
   const cors = corsHeaders();
   let data;
@@ -283,7 +287,7 @@ async function handleBookingLink(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not retrieve booking link." }, 502, cors);
   }
 }
-
+__name(handleBookingLink, "handleBookingLink");
 async function handlePriceTrack(request, env, ctx) {
   const cors = corsHeaders();
   let data;
@@ -316,14 +320,14 @@ async function handlePriceTrack(request, env, ctx) {
     const best = itineraries.reduce((a, b) => parseFloat(a.price.amount) < parseFloat(b.price.amount) ? a : b);
     const price = parseFloat(best.price.amount);
     const currency = best.price.currency;
-    const checkedAt = new Date().toISOString();
+    const checkedAt = (/* @__PURE__ */ new Date()).toISOString();
     let previous = null;
     if (env.ENQUIRIES) {
       const prev = await env.ENQUIRIES.get(trackKey);
       if (prev) previous = JSON.parse(prev);
     }
     const record = { price, currency, ignav_id: best.ignav_id, checked_at: checkedAt, origin: data.origin, destination: data.destination, departure_date: data.departure_date };
-    if (env.ENQUIRIES) ctx.waitUntil(env.ENQUIRIES.put(trackKey, JSON.stringify(record), { expirationTtl: 7776000 }));
+    if (env.ENQUIRIES) ctx.waitUntil(env.ENQUIRIES.put(trackKey, JSON.stringify(record), { expirationTtl: 7776e3 }));
     let alert = null;
     let bookingUrl = null;
     const dropped = previous && price <= previous.price * (1 - dropPercent / 100);
@@ -343,7 +347,8 @@ async function handlePriceTrack(request, env, ctx) {
             if (firstOption.links && firstOption.links.length > 0) bookingUrl = firstOption.links[0].url;
           }
         }
-      } catch {}
+      } catch {
+      }
     }
     return jsonResponse({
       success: true,
@@ -359,7 +364,7 @@ async function handlePriceTrack(request, env, ctx) {
     return jsonResponse({ success: false, message: "Unable to reach flight search." }, 502, cors);
   }
 }
-
+__name(handlePriceTrack, "handlePriceTrack");
 async function handlePriceTrackGet(request, env, ctx) {
   const cors = corsHeaders();
   const url = new URL(request.url);
@@ -374,7 +379,7 @@ async function handlePriceTrackGet(request, env, ctx) {
   if (!record) return jsonResponse({ success: false, message: "No tracking data found." }, 404, cors);
   return jsonResponse({ success: true, ...JSON.parse(record) }, 200, cors);
 }
-
+__name(handlePriceTrackGet, "handlePriceTrackGet");
 async function handleEnquiry(request, env, ctx) {
   const cors = corsHeaders();
   let data;
@@ -384,11 +389,11 @@ async function handleEnquiry(request, env, ctx) {
     return jsonResponse({ success: false, message: "Invalid JSON body." }, 400, cors);
   }
   const enquiryId = "enquiry_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
-  if (env.ENQUIRIES) ctx.waitUntil(env.ENQUIRIES.put(enquiryId, JSON.stringify(data), { expirationTtl: 7776000 }));
+  if (env.ENQUIRIES) ctx.waitUntil(env.ENQUIRIES.put(enquiryId, JSON.stringify(data), { expirationTtl: 7776e3 }));
   if (env.WEB3FORMS_KEY) ctx.waitUntil(sendNotificationEmail(env, data, !!data.return_date));
   return jsonResponse({ success: true, message: "Enquiry submitted.", enquiryId }, 200, cors);
 }
-
+__name(handleEnquiry, "handleEnquiry");
 async function handleCreateBooking(request, env, ctx) {
   const cors = corsHeaders();
   let data;
@@ -437,7 +442,7 @@ async function handleCreateBooking(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not create booking. Please try again." }, 500, cors);
   }
 }
-
+__name(handleCreateBooking, "handleCreateBooking");
 async function handlePaymentSubmit(request, env, ctx) {
   const cors = corsHeaders();
   let data;
@@ -462,7 +467,7 @@ async function handlePaymentSubmit(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not submit payment." }, 500, cors);
   }
 }
-
+__name(handlePaymentSubmit, "handlePaymentSubmit");
 async function handleBookingStatus(request, env, ctx) {
   const cors = corsHeaders();
   const url = new URL(request.url);
@@ -477,7 +482,7 @@ async function handleBookingStatus(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not fetch booking." }, 500, cors);
   }
 }
-
+__name(handleBookingStatus, "handleBookingStatus");
 async function handleAdminLogin(request, env, ctx) {
   const cors = corsHeaders();
   let data;
@@ -490,7 +495,7 @@ async function handleAdminLogin(request, env, ctx) {
     return jsonResponse({ success: true, token: "admin-token-" + Date.now() }, 200, cors);
   return jsonResponse({ success: false, message: "Invalid password." }, 401, cors);
 }
-
+__name(handleAdminLogin, "handleAdminLogin");
 async function handleAdminBookings(request, env, ctx) {
   const cors = corsHeaders();
   const auth = request.headers.get("Authorization") || "";
@@ -503,7 +508,7 @@ async function handleAdminBookings(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not fetch bookings." }, 500, cors);
   }
 }
-
+__name(handleAdminBookings, "handleAdminBookings");
 async function handleAdminVerify(request, env, ctx) {
   const cors = corsHeaders();
   const auth = request.headers.get("Authorization") || "";
@@ -529,7 +534,7 @@ async function handleAdminVerify(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not update booking." }, 500, cors);
   }
 }
-
+__name(handleAdminVerify, "handleAdminVerify");
 async function handleAdminTicket(request, env, ctx) {
   const cors = corsHeaders();
   const auth = request.headers.get("Authorization") || "";
@@ -545,12 +550,12 @@ async function handleAdminTicket(request, env, ctx) {
   try {
     if (data.ticket_file_data && env.ENQUIRIES) {
       const ticketKey = "ticket:" + data.booking_id;
-      const ticketRecord = { booking_id: data.booking_id, filename: data.ticket_filename, filetype: data.ticket_filetype, uploaded_at: new Date().toISOString() };
+      const ticketRecord = { booking_id: data.booking_id, filename: data.ticket_filename, filetype: data.ticket_filetype, uploaded_at: (/* @__PURE__ */ new Date()).toISOString() };
       const dataSize = data.ticket_file_data.length;
-      if (dataSize < 1000000) {
-        ctx.waitUntil(env.ENQUIRIES.put(ticketKey, JSON.stringify({ ...ticketRecord, file_data: data.ticket_file_data }), { expirationTtl: 7776000 }));
+      if (dataSize < 1e6) {
+        ctx.waitUntil(env.ENQUIRIES.put(ticketKey, JSON.stringify({ ...ticketRecord, file_data: data.ticket_file_data }), { expirationTtl: 7776e3 }));
       } else {
-        ctx.waitUntil(env.ENQUIRIES.put(ticketKey, JSON.stringify(ticketRecord), { expirationTtl: 7776000 }));
+        ctx.waitUntil(env.ENQUIRIES.put(ticketKey, JSON.stringify(ticketRecord), { expirationTtl: 7776e3 }));
       }
     }
     await env.DB.prepare("UPDATE bookings SET pnr = ?, ticket_number = ?, ticket_pdf = ?, status = 'confirmed', payment_status = 'verified', updated_at = datetime('now') WHERE id = ?").bind(data.pnr, data.ticket_number || "", data.ticket_filename || "", data.booking_id).run();
@@ -561,7 +566,7 @@ async function handleAdminTicket(request, env, ctx) {
     return jsonResponse({ success: false, message: "Could not add ticket." }, 500, cors);
   }
 }
-
+__name(handleAdminTicket, "handleAdminTicket");
 async function handleTicketDownload(request, env, ctx) {
   const cors = corsHeaders();
   const url = new URL(request.url);
@@ -585,7 +590,7 @@ async function handleTicketDownload(request, env, ctx) {
   }
   return jsonResponse({ success: false, message: "Ticket file not available." }, 404, cors);
 }
-
+__name(handleTicketDownload, "handleTicketDownload");
 async function handleUploadPassport(request, env, ctx) {
   const cors = corsHeaders();
   let data;
@@ -597,18 +602,18 @@ async function handleUploadPassport(request, env, ctx) {
   if (!data.booking_id) return jsonResponse({ success: false, message: "Missing booking ID." }, 400, cors);
   if (!data.data) return jsonResponse({ success: false, message: "No file data." }, 400, cors);
   const key = "passport:" + data.booking_id + ":" + (data.passenger_index || 0);
-  const record = { booking_id: data.booking_id, passenger_index: data.passenger_index || 0, filename: data.filename, filetype: data.filetype, uploaded_at: new Date().toISOString() };
+  const record = { booking_id: data.booking_id, passenger_index: data.passenger_index || 0, filename: data.filename, filetype: data.filetype, uploaded_at: (/* @__PURE__ */ new Date()).toISOString() };
   if (env.ENQUIRIES) {
     const dataSize = data.data.length;
-    if (dataSize < 1000000) {
-      ctx.waitUntil(env.ENQUIRIES.put(key, JSON.stringify({ ...record, file_data: data.data }), { expirationTtl: 7776000 }));
+    if (dataSize < 1e6) {
+      ctx.waitUntil(env.ENQUIRIES.put(key, JSON.stringify({ ...record, file_data: data.data }), { expirationTtl: 7776e3 }));
     } else {
-      ctx.waitUntil(env.ENQUIRIES.put(key, JSON.stringify(record), { expirationTtl: 7776000 }));
+      ctx.waitUntil(env.ENQUIRIES.put(key, JSON.stringify(record), { expirationTtl: 7776e3 }));
     }
   }
   return jsonResponse({ success: true, message: "Passport uploaded.", filename: data.filename }, 200, cors);
 }
-
+__name(handleUploadPassport, "handleUploadPassport");
 async function sendNotificationEmail(env, data, isRoundTrip) {
   try {
     const tp = [];
@@ -630,7 +635,7 @@ async function sendNotificationEmail(env, data, isRoundTrip) {
       "Phone: " + (data.customerMobile || "N/A"),
       "Email: " + (data.customerEmail || "N/A"),
       "",
-      "Submitted: " + (data.submittedAt || new Date().toISOString()),
+      "Submitted: " + (data.submittedAt || (/* @__PURE__ */ new Date()).toISOString()),
       "================================"
     ].join("\n");
     await fetch("https://api.web3forms.com/submit", {
@@ -649,7 +654,7 @@ async function sendNotificationEmail(env, data, isRoundTrip) {
     console.error("Email send failed:", e.message);
   }
 }
-
+__name(sendNotificationEmail, "sendNotificationEmail");
 async function sendBookingEmail(env, data, bookingId) {
   try {
     const messageBody = [
@@ -687,7 +692,7 @@ async function sendBookingEmail(env, data, bookingId) {
     console.error("Booking email failed:", e.message);
   }
 }
-
+__name(sendBookingEmail, "sendBookingEmail");
 async function sendPaymentEmail(env, booking, utr) {
   try {
     const messageBody = [
@@ -722,7 +727,7 @@ async function sendPaymentEmail(env, booking, utr) {
     console.error("Payment email failed:", e.message);
   }
 }
-
+__name(sendPaymentEmail, "sendPaymentEmail");
 async function sendTicketEmail(env, booking) {
   try {
     const messageBody = [
@@ -756,15 +761,14 @@ async function sendTicketEmail(env, booking) {
     console.error("Ticket email failed:", e.message);
   }
 }
-
+__name(sendTicketEmail, "sendTicketEmail");
 function corsHeaders() {
   return { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" };
 }
-
+__name(corsHeaders, "corsHeaders");
 function jsonResponse(obj, status, headers) {
   return new Response(JSON.stringify(obj), { status, headers });
 }
-                           
 __name(jsonResponse, "jsonResponse");
 export {
   worker_default as default
