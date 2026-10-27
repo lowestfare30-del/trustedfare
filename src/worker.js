@@ -93,7 +93,7 @@ ${countries}
     if (url.pathname === "/api/ticket-download" && request.method === "GET") return handleTicketDownload(request, env, ctx);
     return new Response("Not found", { status: 404 });
   }
-}
+};
 async function handleHealthCheck(request, env, ctx) {
   const cors = corsHeaders();
   try {
