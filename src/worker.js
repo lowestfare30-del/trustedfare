@@ -42,11 +42,12 @@ var worker_default = {
 ${countries}
 </urlset>`;
       return new Response(sitemap, { headers: { "Content-Type": "application/xml" } });
-
+   
     // ===== COUNTRY PATHS (/in, /us, /ca, etc.) =====
     if (COUNTRY_SUBDOMAINS.includes(url.pathname) && request.method === "GET")
       return new Response(HTML_PAGE, { headers: { "Content-Type": "text/html; charset=utf-8" } });
-
+    }
+    
     // ===== ROBOTS.TXT =====
     if (url.pathname === "/robots.txt" && request.method === "GET") {
       const robotsTxt = `User-agent: *
