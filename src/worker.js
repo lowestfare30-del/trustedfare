@@ -745,18 +745,20 @@ async function sendTicketEmail(env, booking) {
       "Your flight ticket is confirmed. Thank you for choosing TrustedFare!",
       "================================"
     ].join("\n");
-    await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        access_key: env.WEB3FORMS_KEY,
-        subject: "Ticket Confirmed - " + booking.id + " - " + booking.origin + " to " + booking.destination,
-        from_name: "TrustedFare Website",
-        to: booking.customer_email,
-        replyto: "gm@trustedfare.com",
-        message: messageBody
-      })
-    });
+    await fetch("https://api.resend.com/emails", {
+  method: "POST",
+  headers: {
+    "Authorization": "Bearer " + env.RESEND_API_KEY,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    from: "TrustedFare <gm@trustedfare.com>",
+    to: "gm@trustedfare.com",
+    reply_to: data.customerEmail || "gm@trustedfare.com",
+    subject: "New Flight Search - " + data.origin + " to " + data.destination,
+    text: messageBody
+  })
+});
   } catch (e) {
     console.error("Ticket email failed:", e.message);
   }
