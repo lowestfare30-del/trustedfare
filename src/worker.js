@@ -169,7 +169,7 @@ async function handleSearch(request, env, ctx) {
     const enquiryId = "enquiry_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
     ctx.waitUntil(env.ENQUIRIES.put(enquiryId, JSON.stringify(data), { expirationTtl: 7776e3 }));
   }
-  if (env.WEB3FORMS_KEY) ctx.waitUntil(sendNotificationEmail(env, data, isRoundTrip));
+  if (env.RESEND_API_KEY) ctx.waitUntil(sendNotificationEmail(env, data, isRoundTrip));
   if (!env.IGNAV_API_KEY)
     return jsonResponse({ success: false, message: "Flight search is not configured." }, 500, cors);
   try {
@@ -390,7 +390,7 @@ async function handleEnquiry(request, env, ctx) {
   }
   const enquiryId = "enquiry_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
   if (env.ENQUIRIES) ctx.waitUntil(env.ENQUIRIES.put(enquiryId, JSON.stringify(data), { expirationTtl: 7776e3 }));
-  if (env.WEB3FORMS_KEY) ctx.waitUntil(sendNotificationEmail(env, data, !!data.return_date));
+  if (env.RESEND_API_KEY) ctx.waitUntil(sendNotificationEmail(env, data, !!data.return_date));
   return jsonResponse({ success: true, message: "Enquiry submitted.", enquiryId }, 200, cors);
 }
 __name(handleEnquiry, "handleEnquiry");
@@ -435,7 +435,7 @@ async function handleCreateBooking(request, env, ctx) {
         ).bind(bookingId, p.title || "", p.first_name || "", p.last_name || "", p.date_of_birth || "", p.passport_number || "", p.passport_expiry || "").run();
       }
     }
-    if (env.WEB3FORMS_KEY) ctx.waitUntil(sendBookingEmail(env, data, bookingId));
+    if (env.RESEND_API_KEY) ctx.waitUntil(sendBookingEmail(env, data, bookingId));
     return jsonResponse({ success: true, booking_id: bookingId, message: "Booking created. Please complete payment." }, 200, cors);
   } catch (e) {
     console.error("Create booking failed:", e.message);
@@ -460,7 +460,7 @@ async function handlePaymentSubmit(request, env, ctx) {
     await env.DB.prepare(
       "UPDATE bookings SET utr_reference = ?, payment_status = 'submitted', status = 'payment_pending', updated_at = datetime('now') WHERE id = ?"
     ).bind(data.utr_reference, data.booking_id).run();
-    if (env.WEB3FORMS_KEY) ctx.waitUntil(sendPaymentEmail(env, booking, data.utr_reference));
+    if (env.RESEND_API_KEY) ctx.waitUntil(sendPaymentEmail(env, booking, data.utr_reference));
     return jsonResponse({ success: true, message: "Payment submitted. We will verify and confirm your booking shortly." }, 200, cors);
   } catch (e) {
     console.error("Payment submit failed:", e.message);
@@ -638,7 +638,7 @@ async function sendNotificationEmail(env, data, isRoundTrip) {
       "Submitted: " + (data.submittedAt || (/* @__PURE__ */ new Date()).toISOString()),
       "================================"
     ].join("\n");
-    await fetch("https://api.web3forms.com/submit", {
+    await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -676,7 +676,7 @@ async function sendBookingEmail(env, data, bookingId) {
       "Status: PENDING PAYMENT",
       "================================"
     ].join("\n");
-    await fetch("https://api.web3forms.com/submit", {
+    await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
